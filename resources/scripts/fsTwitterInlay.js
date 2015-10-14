@@ -35,7 +35,7 @@ function domInsertOnReady(aContentWindow) {
 	var backgroundColor = 'white';
 	
 	aContentDocument.documentElement.appendChild(jsonToDOM(
-		['style', {},
+		['style', {class:'tweeeeeeeeeeeeeeeeeeter'},
 			'.tweeeeeeeeeeeeeeeeeeter-TweetBox .Icon::before { color:transparent; background:transparent url("chrome://tweeeeeeeeeeeeeeeeeeter-content-accessible/content/baloons16-dar.png") no-repeat scroll left center}'
 		]
 	, aContentDocument, {}));
@@ -50,7 +50,7 @@ function domInsertOnReady(aContentWindow) {
 		}
 		var myEls = {};
 		var tweeeeeeeeeeeeeeeeeeterBtn = jsonToDOM([
-			'span', {class:'tweeeeeeeeeeeeeeeeeeter-TweetBox'},
+			'span', {class:'tweeeeeeeeeeeeeeeeeeter-TweetBox tweeeeeeeeeeeeeeeeeeter'},
 				[
 					'div', {class:'geo-picker'},
 						[
@@ -262,7 +262,7 @@ function injectContentScript(aSbId, aContentWindow) {
 	};
 	
 	SANDBOXES[aSbId].unloaders.unOnBeforeUnload = function() {
-		delete SANDBOXES[cSbId].unloaders.unOnBeforeUnload;
+		delete SANDBOXES[aSbId].unloaders.unOnBeforeUnload;
 		aContentWindow.removeEventListener('beforeunload', onBeforeUnload, false);
 	};
 	
@@ -280,7 +280,7 @@ var bootstrapCallbacks = { // can use whatever, but by default it uses this
 	destroySelf: function() {
 		removeEventListener('unload', fsUnloaded, false);
 		removeEventListener('DOMContentLoaded', onPageReady, false);
-		
+		console.log('content.location.hostname:', content.location.hostname);
 		for (var aSbId in SANDBOXES) {
 			if (SANDBOXES[aSbId].unloaders.unSandbox) {
 				SANDBOXES[aSbId].unloaders.unSandbox(); // as this will run all the unloaders
@@ -292,6 +292,18 @@ var bootstrapCallbacks = { // can use whatever, but by default it uses this
 		}
 
 		contentMMFromContentWindow_Method2(content).removeMessageListener(core.addon.id, bootstrapMsgListener);
+		
+		console.log('content.location.hostname:', content.location.hostname);
+		if (content.location.hostname == TWITTER_HOSTNAME) {
+			console.log('found matching hostname');
+			var tweeeeeeeeeeeeeeeeeeter_stuff = content.document.querySelectorAll('.tweeeeeeeeeeeeeeeeeeter');
+			console.info('tweeeeeeeeeeeeeeeeeeter_stuff:', tweeeeeeeeeeeeeeeeeeter_stuff);
+			for (var i=0; i<tweeeeeeeeeeeeeeeeeeter_stuff.length; i++) {
+				tweeeeeeeeeeeeeeeeeeter_stuff[i].parentNode.removeChild(tweeeeeeeeeeeeeeeeeeter_stuff[i]);
+				console.log('iter rem:', i);
+			}
+		}
+		console.error('okkkkkkkkkkkkkkkkkkkkkkkkkkkkkk iterated removed');
 	}
 };
 const SAM_CB_PREFIX = '_sam_gen_cb_';
@@ -467,7 +479,7 @@ function jsonToDOM(json, doc, nodes) {
 function fsUnloaded() {
 	// framescript on unload
 	console.log('fsTwitterInlay.js framworker unloading');
-	contentMMFromContentWindow_Method2(content).removeMessageListener(core.addon.id, bootstrapMsgListener); // framescript comm
+	bootstrapCallbacks.destroySelf();
 
 }
 function onPageReady(aEvent) {
