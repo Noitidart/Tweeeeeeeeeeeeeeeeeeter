@@ -18,7 +18,7 @@ const core = {
 			resources: 'chrome://tweeeeeeeeeeeeeeeeeeter/content/resources/',
 			scripts: 'chrome://tweeeeeeeeeeeeeeeeeeter/content/resources/scripts/',
 		},
-		cache_key: Math.random() // set to version on release
+		cache_key: 'v1.0' // set to version on release
 	},
 	os: {
 		name: OS.Constants.Sys.Name.toLowerCase(),
@@ -58,7 +58,7 @@ function startup(aData, aReason) {
 	var aTimer = Cc['@mozilla.org/timer;1'].createInstance(Ci.nsITimer);
 	aTimer.initWithCallback({
 		notify: function() {
-			console.error('ok starting up adding');
+
 			// register framescript listener
 			Services.mm.addMessageListener(core.addon.id, fsMsgListener);
 			
@@ -88,14 +88,14 @@ var fsFuncs = { // can use whatever, but by default its setup to use this
 	requestInit: function(aMsgEvent) {
 		// start - l10n injection into fs
 		
-		console.error('in requestinit server side');
+
 		var l10n = {};
 		// get all the localized strings into ng
 		var l10ns = myServices.sb_ti.getSimpleEnumeration();
 		while (l10ns.hasMoreElements()) {
 			var l10nProp = l10ns.getNext();
 			var l10nPropEl = l10nProp.QueryInterface(Ci.nsIPropertyElement);
-			// doing console.log(propEl) shows the object has some fields that interest us
+
 
 			var l10nPropKey = l10nPropEl.key;
 			var l10nPropStr = l10nPropEl.value;
@@ -114,7 +114,7 @@ var fsMsgListener = {
 	funcScope: fsFuncs,
 	receiveMessage: function(aMsgEvent) {
 		var aMsgEventData = aMsgEvent.data;
-		console.log('fsMsgListener getting aMsgEventData:', aMsgEventData, 'aMsgEvent:', aMsgEvent);
+
 		// aMsgEvent.data should be an array, with first item being the unfction name in bootstrapCallbacks
 		
 		var callbackPendingId;
@@ -137,23 +137,23 @@ var fsMsgListener = {
 							aMsgEvent.target.messageManager.sendAsyncMessage(core.addon.id, [callbackPendingId, aVal]);
 						},
 						function(aReason) {
-							console.error('aReject:', aReason);
+
 							aMsgEvent.target.messageManager.sendAsyncMessage(core.addon.id, [callbackPendingId, ['promise_rejected', aReason]]);
 						}
 					).catch(
 						function(aCatch) {
-							console.error('aCatch:', aCatch);
+
 							aMsgEvent.target.messageManager.sendAsyncMessage(core.addon.id, [callbackPendingId, ['promise_rejected', aCatch]]);
 						}
 					);
 				} else {
 					// assume array
-					console.warn('ok responding to callback id:', callbackPendingId, aMsgEvent.target);
+
 					aMsgEvent.target.messageManager.sendAsyncMessage(core.addon.id, [callbackPendingId, rez_parentscript_call]);
 				}
 			}
 		}
-		else { console.warn('funcName', funcName, 'not in scope of this.funcScope') } // else is intentionally on same line with console. so on finde replace all console. lines on release it will take this out
+
 		
 	}
 };
@@ -196,7 +196,7 @@ function Deferred() {
 			}.bind(this));
 			Object.freeze(this);
 		} catch (ex) {
-			console.error('Promise not available!', ex);
+
 			throw new Error('Promise not available!');
 		}
 	} else {
