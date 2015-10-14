@@ -19,6 +19,103 @@ var SANDBOXES = {};
 var last_sandbox_id = -1;
 
 // start - addon functionalities
+function domInsertOnReady(aContentWindow) {
+	var aContentDocument = aContentWindow.document;
+	var tweetToolbarColl = aContentDocument.querySelectorAll('form.tweet-form .toolbar');
+	console.error('tweetToolbarColl:', tweetToolbarColl);
+
+	var tweetEditor = aContentDocument.querySelectorAll('form.tweet-form .rich-editor');
+	var tweetBoxExtras = aContentDocument.querySelectorAll('form.tweet-form .tweet-box-extras');
+	console.error('tweetBoxExtras:', tweetToolbarColl);
+	
+	for (var i=0; i<tweetBoxExtras.length; i++) {
+		// var tweetBtn = teetToolbarColl[i].querySelector('.tweet-button');
+		var myEls = {};
+		var tweeeeeeeeeeeeeeeeeeterBtn = jsonToDOM([
+			'span', {class:'tweeeeeeeeeeeeeeeeeeter-TweetBox-tweeeeeeeeeeeeeeeeeeterBtn'},
+				[
+					'div', {class:'tweeeeeeeeeeeeeeeeeeter-photo-selector'},
+						[
+							'button', {key:'rawr', class:'btn icon-btn js-tooltip', 'data-original-title':'Add photos or video', type:'button', tabindex:'-1', 'aria-hidden':'true'},
+								[
+									'span', {class:'tweet-camera Icon Icon--camera'}
+								],
+								[
+									'span', {class:'text add-photo-label u-hideMediumViewport'},
+										'Text to Image'
+								]
+						]
+				]
+		], aContentDocument, myEls);
+		
+		console.log('myEls:', myEls);
+		myEls.rawr.addEventListener('click', function(aI) {
+			var aMsg = aContentWindow.prompt('Your message will be converted to an image and then attached to the tweet', 'Type message here');
+			if (aMsg) {
+				
+				// aContentDocument.documentElement.appendChild(myIframe);
+				
+				var fontFamily = 'arial';
+				var fontWeight = 'bold';
+				var fontSize = '30px';
+				var maxWidth = '300px';
+				var backgroundColor = 'red';
+				
+				var myDummy = aContentDocument.createElementNS(NS_HTML, 'span');
+				myDummy.setAttribute('style', 'font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0; position:absolute; top:0; left:0; z-index:999999;');
+				myDummy.textContent = aMsg;
+				
+				aContentDocument.documentElement.appendChild(myDummy);
+				
+				var blockWidth = myDummy.offsetWidth;
+				var blockHeight = myDummy.offsetHeight;
+				console.error('blockWidth:', blockWidth);
+				console.error('blockHeight:', blockHeight);
+				
+				aContentDocument.documentElement.removeChild(myDummy);
+				
+				var myCan = aContentDocument.createElementNS(NS_HTML, 'canvas');
+				myCan.width = blockWidth;
+				myCan.height = blockHeight;
+				var myCtx = myCan.getContext('2d');
+				
+				
+				var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + blockWidth + '" height="' + blockHeight + '" style="margin:0;padding:0;">' +
+						   '<foreignObject width="100%" height="100%">' +
+						   '<div xmlns="http://www.w3.org/1999/xhtml" style="width:' + blockWidth + 'px; height:' + blockHeight + 'px; font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize + '; background-color:' + backgroundColor + '; margin:0; padding:0;">' +
+							 aMsg.replace(/'/g, '\'')  +
+						   '</div>' +
+						   '</foreignObject>' +
+						   '</svg>';
+
+				var DOMURL = aContentWindow.URL;
+
+				var img = new aContentWindow.Image();
+				var svg = new aContentWindow.Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+				var url = DOMURL.createObjectURL(svg);
+
+				var attachImg = aContentDocument.createElementNS(NS_HTML, 'img');
+				
+				img.onload = function () {
+					myCtx.drawImage(img, 0, 0);
+					DOMURL.revokeObjectURL(url);
+					attachImg.setAttribute('src', myCan.toDataURL('image/png', ''));
+					tweetEditor[aI].appendChild(attachImg);
+					// attachImg.setAttribute('src', url);
+					console.error('attachImg.src:', attachImg.src);
+					// aContentDocument.documentElement.insertBefore(attachImg, aContentDocument.documentElement.firstChild);
+				}
+				
+				img.src = url;
+				
+			}
+			tweetEditor[aI].focus();
+		}.bind(myEls.rawr, i), false);
+		
+		tweetBoxExtras[i].insertBefore(tweeeeeeeeeeeeeeeeeeterBtn, tweetBoxExtras[i].firstChild);
+	}
+}
+
 function doOnReady(aContentWindow) {
 
 	if (aContentWindow.frameElement) {
@@ -41,6 +138,7 @@ function doOnReady(aContentWindow) {
 				// twitter actually loaded
 				// twitterReady = true;
 				console.error('ok twitter page ready, lets ensure page loaded finished');
+				domInsertOnReady(aContentWindow);
 				ensureLoaded(aContentWindow);
 			}
 		} else {
@@ -266,6 +364,69 @@ function Deferred() {
 		console.log('Promise not available!', ex);
 		throw new Error('Promise not available!');
 	}
+}
+function jsonToDOM(json, doc, nodes) {
+
+    var namespaces = {
+        html: 'http://www.w3.org/1999/xhtml',
+        xul: 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'
+    };
+    var defaultNamespace = namespaces.html;
+
+    function namespace(name) {
+        var m = /^(?:(.*):)?(.*)$/.exec(name);        
+        return [namespaces[m[1]], m[2]];
+    }
+
+    function tag(name, attr) {
+        if (Array.isArray(name)) {
+            var frag = doc.createDocumentFragment();
+            Array.forEach(arguments, function (arg) {
+                if (!Array.isArray(arg[0]))
+                    frag.appendChild(tag.apply(null, arg));
+                else
+                    arg.forEach(function (arg) {
+                        frag.appendChild(tag.apply(null, arg));
+                    });
+            });
+            return frag;
+        }
+
+        var args = Array.slice(arguments, 2);
+        var vals = namespace(name);
+        var elem = doc.createElementNS(vals[0] || defaultNamespace, vals[1]);
+
+        for (var key in attr) {
+            var val = attr[key];
+            if (nodes && key == 'key')
+                nodes[val] = elem;
+
+            vals = namespace(key);
+            if (typeof val == 'function')
+                elem.addEventListener(key.replace(/^on/, ''), val, false);
+            else
+                elem.setAttributeNS(vals[0] || '', vals[1], val);
+        }
+        args.forEach(function(e) {
+            try {
+                elem.appendChild(
+                                    Object.prototype.toString.call(e) == '[object Array]'
+                                    ?
+                                        tag.apply(null, e)
+                                    :
+                                        e instanceof doc.defaultView.Node
+                                        ?
+                                            e
+                                        :
+                                            doc.createTextNode(e)
+                                );
+            } catch (ex) {
+                elem.appendChild(doc.createTextNode(ex));
+            }
+        });
+        return elem;
+    }
+    return tag.apply(null, json);
 }
 // end - common helper functions
 
