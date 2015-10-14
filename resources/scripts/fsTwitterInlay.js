@@ -1,4 +1,4 @@
-/*start - chrome stuff*/
+// FRAMESCRIPT
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 
 // Globals
@@ -7,18 +7,161 @@ var core = {
 		id: 'Tweeeeeeeeeeeeeeeeeeter@jetpack',
 		path: {
 			name: 'tweeeeeeeeeeeeeeeeeeter',
-			locale: 'chrome://tweeeeeeeeeeeeeeeeeeter/locale/'
+			scripts: 'chrome://tweeeeeeeeeeeeeeeeeeter/content/resources/scripts/'
 		},
 		cache_key: Math.random() // set to version on release
 	}
 };
 var l10n;
 const NS_HTML = 'http://www.w3.org/1999/xhtml';
+const TWITTER_HOSTNAME = 'twitter.com';
+var SANDBOXES = {};
+var last_sandbox_id = -1;
+
+// start - addon functionalities
+function doOnReady(aContentWindow) {
+
+	if (aContentWindow.frameElement) {
+		// console.warn('frame element DOMContentLoaded, so dont respond yet:', aContentWindow.location.href);
+		return;
+	} else {
+		// parent window loaded (not frame)
+		if (aContentWindow.location.hostname == TWITTER_HOSTNAME) {
+			// ok twitter page ready, lets make sure its not an error page
+			// check if got error loading page:
+			var webnav = aContentWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation);
+			var docuri = webnav.document.documentURI;
+			// console.info('docuri:', docuri);
+			if (docuri.indexOf('about:') == 0) {
+				// twitter didnt really load, it was an error page
+				console.log('twitter hostname page ready, but an error page loaded, so like offline or something:', aContentWindow.location, 'docuri:', docuri);
+				// unregReason = 'error-loading';
+				return;
+			} else {
+				// twitter actually loaded
+				// twitterReady = true;
+				console.error('ok twitter page ready, lets ensure page loaded finished');
+				ensureLoaded(aContentWindow);
+			}
+		} else {
+			// console.log('page ready, but its not twitter so do nothing:', uneval(aContentWindow.location));
+			return;
+		}
+	}
+}
+
+function onFullLoad(aSbId, aEvent) {
+	var aContentWindow = aEvent.target.defaultView;
+	if (aContentWindow == SANDBOXES[aSbId].contentWindowWeak.get()) {
+		console.error('OK aContentWindow::LOAD triggered and its a match');
+		SANDBOXES[aSbId].unloaders.unFullLoader();
+		injectContentScript(aSbId, aContentWindow);
+	} else {
+		console.error('aContentWindow::LOAD triggered but the cContentWindow does not equal SANDBOX[aSbId].contentWindow');
+		return;
+	}
+}
+
+function ensureLoaded(aContentWindow) {
+	// only attached to twitter pages once idented as twitter
+	// need to ensure loaded because jquery is needed by the content script
+	
+	console.log('in ensureLoaded');
+	
+	last_sandbox_id++;
+	var cSbId = last_sandbox_id;
+	
+	SANDBOXES[cSbId] = {
+		unloaders: {}
+	};
+	SANDBOXES[cSbId].contentWindowWeak = Cu.getWeakReference(aContentWindow);
+	
+	var aContentDocument = aContentWindow.document;
+	
+	console.log('in ensureLoaded STEP 2');
+	
+	if (aContentDocument.readyState == 'complete') {
+		console.log('ok twitter was ALREADY fully loaded, so lets inject content script');
+		injectContentScript(cSbId, aContentWindow);
+	} else {
+		console.log('twitter not yet FULLY LOADEd so attaching listener to listen for full load');
+		var fullLoader = onFullLoad.bind(null, cSbId);
+		SANDBOXES[cSbId].unloaders.unFullLoader = function() {
+			delete SANDBOXES[cSbId].unloaders.unFullLoader;
+			aContentWindow.removeEventListener('load', fullLoader, true);
+		};
+		aContentWindow.addEventListener('load', fullLoader, true); // need to wait for load, as need to wait for jquery $ to come in // need to use true otherwise load doesnt trigger
+	}
+}
+
+function injectContentScript(aSbId, aContentWindow) {
+	
+	console.log('executing injectContentScript');
+	
+	var aContentDocument = aContentWindow.document;
+	
+	var options = {
+		sandboxPrototype: aContentWindow,
+		wantXrays: false
+	};
+	var principal = docShell.chromeEventHandler.contentPrincipal; // aContentWindow.location.origin;
+
+	
+	SANDBOXES[aSbId].sb = Cu.Sandbox(principal, options);
+	SANDBOXES[aSbId].unloaders.unSandbox = function() {
+
+		delete SANDBOXES[aSbId].unloaders.unSandbox;
+		
+		console.log('nuked sandbox with id:', aSbId);
+		
+		Cu.nukeSandbox(SANDBOXES[aSbId].sb);
+		
+		
+		for (var p in SANDBOXES[aSbId].unloaders) {
+			SANDBOXES[aSbId].unloaders[p]();
+		}
+		
+		delete SANDBOXES[aSbId];
+	};
+	
+	var onBeforeUnload = function() {
+		console.log('triggered onBeforeUnload for id:', aSbId);
+		SANDBOXES[aSbId].unloaders.unOnBeforeUnload(); // i dont have to do this, as unSandbox runs all the unloaders, but i just do it for consistency so if i revisit this code in future i dont get confused
+		SANDBOXES[aSbId].unloaders.unSandbox();
+	};
+	
+	SANDBOXES[aSbId].unloaders.unOnBeforeUnload = function() {
+		delete SANDBOXES[cSbId].unloaders.unOnBeforeUnload;
+		aContentWindow.removeEventListener('beforeunload', onBeforeUnload, false);
+	};
+	
+	aContentWindow.addEventListener('beforeunload', onBeforeUnload, false);
+	
+	console.log('will now load jquery crap');
+	Services.scriptloader.loadSubScript(core.addon.path.scripts + 'csTwitterInlay.js?' + core.addon.cache_key, SANDBOXES[aSbId].sb, 'UTF-8');
+}
+// end - addon functionalities
 
 // start - server/framescript comm layer
 // sendAsyncMessageWithCallback - rev3
 var bootstrapCallbacks = { // can use whatever, but by default it uses this
 	// put functions you want called by bootstrap/server here
+	destroySelf: function() {
+		removeEventListener('unload', fsUnloaded, false);
+		removeEventListener('DOMContentLoaded', onPageReady, false);
+		
+		for (var aSbId in SANDBOXES) {
+			if (SANDBOXES[aSbId].unloaders.unSandbox) {
+				SANDBOXES[aSbId].unloaders.unSandbox(); // as this will run all the unloaders
+			} else {
+				for (var aUnloaderName in SANDBOXES[aSbId].unloaders) {
+					SANDBOXES[aSbId].unloaders[aUnloaderName]();
+				}
+			}
+		}
+		
+		contentMMFromContentWindow_Method2(content).removeMessageListener(core.addon.id, bootstrapMsgListener);
+	}
 };
 const SAM_CB_PREFIX = '_sam_gen_cb_';
 var sam_last_cb_id = -1;
@@ -135,14 +278,23 @@ function fsUnloaded() {
 }
 function onPageReady(aEvent) {
 	var aContentWindow = aEvent.target.defaultView;
-	console.log('fsTwitterInlay.js page ready, content.location:', content.location.href, 'aContentWindow.location:', aContentWindow.location.href);
-	sendAsyncMessageWithCallback(contentMMFromContentWindow_Method2(window), core.addon.id, ['requestInit', BC.options[i].pref_name], bootstrapMsgListener.funcScope, function(aData) {
-		core = aData.aCore;
-		l10n = aData.aL10n
-	});
+	// console.log('fsTwitterInlay.js page ready, content.location:', content.location.href, 'aContentWindow.location:', aContentWindow.location.href);
+	doOnReady(aContentWindow);
 }
 
+sendAsyncMessageWithCallback(contentMMFromContentWindow_Method2(content), core.addon.id, ['requestInit'], bootstrapMsgListener.funcScope, function(aData) {
+	// core = aData.aCore;
+	l10n = aData.aL10n
+});
 addEventListener('unload', fsUnloaded, false);
 addEventListener('DOMContentLoaded', onPageReady, false);
+if (content.document.readyState == 'complete') {
+	var fakeEvent = {
+		target: {
+			defaultView: content
+		}
+	}
+	onPageReady(fakeEvent);
+}
 console.log('added DOMContentLoaded event, current location is:', content.location.href);
 // end - load unload stuff

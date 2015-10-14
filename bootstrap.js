@@ -36,8 +36,8 @@ const JETPACK_DIR_BASENAME = 'jetpack';
 // Lazy Imports
 const myServices = {};
 XPCOMUtils.defineLazyGetter(myServices, 'hph', function () { return Cc['@mozilla.org/network/protocol;1?name=http'].getService(Ci.nsIHttpProtocolHandler); });
-XPCOMUtils.defineLazyGetter(myServices, 'sb', function () { return Services.strings.createBundle(core.addon.path.locale + 'bootstrap.properties?' + core.addon.cache_key); /* Randomize URI to work around bug 719376 */ });
-XPCOMUtils.defineLazyGetter(myServices, 'sb_ti', function () { return Services.strings.createBundle(core.addon.path.locale + 'bootstrap.properties?' + core.addon.cache_key); /* Randomize URI to work around bug 719376 */ });
+XPCOMUtils.defineLazyGetter(myServices, 'sb', function () { return Services.strings.createBundle(core.addon.path.locale + 'bootstrap.properties?' + core.addon.cache_key); /* Randomize URI during development to avoid caching - bug 719376 */ });
+XPCOMUtils.defineLazyGetter(myServices, 'sb_ti', function () { return Services.strings.createBundle(core.addon.path.locale + 'twitter-inlay.properties?' + core.addon.cache_key); /* Randomize URI during development to avoid caching - bug 719376 */ });
 
 // START - Addon Functionalities					
 
@@ -58,10 +58,19 @@ function startup(aData, aReason) {
 	// register framescript listener
 	Services.mm.addMessageListener(core.addon.id, fsMsgListener);
 	
+	// register framescript injector
+	Services.mm.loadFrameScript(core.addon.path.scripts + 'fsTwitterInlay.js?' + core.addon.cache_key, true);
+	
 }
 
 function shutdown(aData, aReason) {
 	if (aReason == APP_SHUTDOWN) { return }
+	
+	// unregister framescript injector
+	Services.mm.removeDelayedFrameScript(core.addon.path.scripts + 'fsTwitterInlay.js?' + core.addon.cache_key);
+	
+	// kill framescripts
+	Services.mm.broadcastAsyncMessage(core.addon.id, ['destroySelf']);
 	
 	// unregister framescript listener
 	Services.mm.removeMessageListener(core.addon.id, fsMsgListener);
