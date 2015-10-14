@@ -82,6 +82,7 @@ var fsFuncs = { // can use whatever, but by default its setup to use this
 	requestInit: function() {
 		// start - l10n injection into fs
 		
+		console.error('in requestinit server side');
 		l10n = {};
 		// get all the localized strings into ng
 		var l10ns = myServices.sb_ti.getSimpleEnumeration();

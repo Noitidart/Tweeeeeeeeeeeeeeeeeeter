@@ -12,7 +12,7 @@ var core = {
 		cache_key: Math.random() // set to version on release
 	}
 };
-var l10n;
+var l10n = {};
 const NS_HTML = 'http://www.w3.org/1999/xhtml';
 const TWITTER_HOSTNAME = 'twitter.com';
 var SANDBOXES = {};
@@ -21,48 +21,62 @@ var last_sandbox_id = -1;
 // start - addon functionalities
 function domInsertOnReady(aContentWindow) {
 	var aContentDocument = aContentWindow.document;
-	var tweetToolbarColl = aContentDocument.querySelectorAll('form.tweet-form .toolbar');
-	console.error('tweetToolbarColl:', tweetToolbarColl);
-
-	var tweetEditor = aContentDocument.querySelectorAll('form.tweet-form .rich-editor');
-	var tweetBoxExtras = aContentDocument.querySelectorAll('form.tweet-form .tweet-box-extras');
-	console.error('tweetBoxExtras:', tweetToolbarColl);
 	
-	for (var i=0; i<tweetBoxExtras.length; i++) {
+	var tweetForms = aContentDocument.querySelectorAll('form.tweet-form');
+	console.error('tweetForms:', tweetForms);
+	
+	// var tweetToolbarColl = aContentDocument.querySelectorAll('form.tweet-form .toolbar');
+	// console.error('tweetToolbarColl:', tweetToolbarColl);
+
+	var fontFamily = 'arial';
+	var fontWeight = 'bold';
+	var fontSize = '24px';
+	var maxWidth = '600px';
+	var backgroundColor = 'white';
+	
+	aContentDocument.documentElement.appendChild(jsonToDOM(
+		['style', {},
+			'.tweeeeeeeeeeeeeeeeeeter-TweetBox .Icon::before { color:transparent; background:transparent url("chrome://tweeeeeeeeeeeeeeeeeeter-content-accessible/content/baloons16-dar.png") no-repeat scroll left center}'
+		]
+	, aContentDocument, {}));
+	
+	for (var i=0; i<tweetForms.length; i++) {
 		// var tweetBtn = teetToolbarColl[i].querySelector('.tweet-button');
+		var tweetEditor = tweetForms[i].querySelector('.rich-editor');
+		var tweetBoxExtras = tweetForms[i].querySelector('.tweet-box-extras');
+		if (!tweetBoxExtras || !tweetEditor) {
+			console.warn('an element was not found in tweet from number:', i, 'tweetBoxExtras:', tweetBoxExtras, 'tweetEditor:', tweetEditor)
+			continue;
+		}
 		var myEls = {};
 		var tweeeeeeeeeeeeeeeeeeterBtn = jsonToDOM([
-			'span', {class:'tweeeeeeeeeeeeeeeeeeter-TweetBox-tweeeeeeeeeeeeeeeeeeterBtn'},
+			'span', {class:'tweeeeeeeeeeeeeeeeeeter-TweetBox'},
 				[
-					'div', {class:'tweeeeeeeeeeeeeeeeeeter-photo-selector'},
+					'div', {class:'geo-picker'},
 						[
-							'button', {key:'rawr', class:'btn icon-btn js-tooltip', 'data-original-title':'Add photos or video', type:'button', tabindex:'-1', 'aria-hidden':'true'},
+							'button', {key:'rawr', class:'btn icon-btn js-tooltip', 'data-original-title':l10n['btn-tooltip'], type:'button', tabindex:'-1', 'aria-hidden':'true'},
 								[
 									'span', {class:'tweet-camera Icon Icon--camera'}
 								],
 								[
 									'span', {class:'text add-photo-label u-hideMediumViewport'},
-										'Text to Image'
+										l10n['btn-label']
 								]
 						]
 				]
 		], aContentDocument, myEls);
 		
 		console.log('myEls:', myEls);
-		myEls.rawr.addEventListener('click', function(aI) {
-			var aMsg = aContentWindow.prompt('Your message will be converted to an image and then attached to the tweet', 'Type message here');
+		myEls.rawr.addEventListener('click', function(aTweetEditor) {
+			var aMsg = aContentWindow.prompt(l10n['prompt-body'], l10n['prompt-prefill']);
 			if (aMsg) {
 				
 				var myIframe = aContentDocument.createElementNS(NS_HTML, 'iframe');
-					myIframe.setAttribute('style', ' position:absolute; top:0; left:0; z-index:999999;');
+					myIframe.setAttribute('style', 'position:absolute; top:0; left:0; z-index:999999;visibility:hidden; min-width:' + maxWidth + ';');
 					
 					myIframe.addEventListener('load', function() {
 						console.error('iframe loaded!');
-						var fontFamily = 'arial';
-						var fontWeight = 'bold';
-						var fontSize = '30px';
-						var maxWidth = '300px';
-						var backgroundColor = 'red';
+
 						
 						var myDummy = myIframe.contentDocument.createElementNS(NS_HTML, 'div');
 						/*
@@ -116,10 +130,10 @@ function domInsertOnReady(aContentWindow) {
 							myCtx.drawImage(img, 0, 0);
 							DOMURL.revokeObjectURL(url);
 							attachImg.setAttribute('src', myCan.toDataURL('image/png', ''));
-							tweetEditor[aI].appendChild(attachImg);
+							aTweetEditor.appendChild(attachImg);
 							// attachImg.setAttribute('src', url);
 							console.error('attachImg.src:', attachImg.src);
-							// myIframe.contentDocument.documentElement.insertBefore(attachImg, myIframe.contentDocument.documentElement.firstChild);
+							myIframe.parentNode.removeChild(myIframe);
 						}
 						
 						img.src = url;
@@ -128,10 +142,10 @@ function domInsertOnReady(aContentWindow) {
 				aContentDocument.documentElement.appendChild(myIframe);
 			}
 			
-			tweetEditor[aI].focus();
-		}.bind(myEls.rawr, i), false);
+			aTweetEditor.focus();
+		}.bind(myEls.rawr, tweetEditor), false);
 		
-		tweetBoxExtras[i].insertBefore(tweeeeeeeeeeeeeeeeeeterBtn, tweetBoxExtras[i].firstChild);
+		tweetBoxExtras.insertBefore(tweeeeeeeeeeeeeeeeeeterBtn, tweetBoxExtras.firstChild);
 	}
 }
 
@@ -286,6 +300,7 @@ function sendAsyncMessageWithCallback(aMessageManager, aGroupId, aMessageArr, aC
 	sam_last_cb_id++;
 	var thisCallbackId = SAM_CB_PREFIX + sam_last_cb_id;
 	aCallbackScope = aCallbackScope ? aCallbackScope : bootstrap; // :todo: figure out how to get global scope here, as bootstrap is undefined
+	console.error('adding to funcScope:', thisCallbackId);
 	aCallbackScope[thisCallbackId] = function(aMessageArr) {
 		delete aCallbackScope[thisCallbackId];
 		aCallback.apply(null, aMessageArr);
@@ -333,7 +348,7 @@ var bootstrapMsgListener = {
 				}
 			}
 		}
-		else { console.warn('funcName', funcName, 'not in scope of this.funcScope') } // else is intentionally on same line with console. so on finde replace all console. lines on release it will take this out
+		else { console.warn('funcName', funcName, 'not in scope of this.funcScope', this.funcScope) } // else is intentionally on same line with console. so on finde replace all console. lines on release it will take this out
 		
 	}
 };
@@ -462,19 +477,26 @@ function onPageReady(aEvent) {
 	doOnReady(aContentWindow);
 }
 
-sendAsyncMessageWithCallback(contentMMFromContentWindow_Method2(content), core.addon.id, ['requestInit'], bootstrapMsgListener.funcScope, function(aData) {
-	// core = aData.aCore;
-	l10n = aData.aL10n
-});
-addEventListener('unload', fsUnloaded, false);
-addEventListener('DOMContentLoaded', onPageReady, false);
-if (content.document.readyState == 'complete') {
-	var fakeEvent = {
-		target: {
-			defaultView: content
+function init() {
+	console.error('in init');
+	sendAsyncMessageWithCallback(contentMMFromContentWindow_Method2(content), core.addon.id, ['requestInit'], bootstrapMsgListener.funcScope, function(aData) {
+		// core = aData.aCore;
+		console.error('back in callback', aData);
+		l10n = aData.aL10n
+		console.error('set l10n to:', aData.aL10n)
+		
+		addEventListener('unload', fsUnloaded, false);
+		addEventListener('DOMContentLoaded', onPageReady, false);
+		if (content.document.readyState == 'complete') {
+			var fakeEvent = {
+				target: {
+					defaultView: content
+				}
+			}
+			onPageReady(fakeEvent);
 		}
-	}
-	onPageReady(fakeEvent);
+	});
 }
-console.log('added DOMContentLoaded event, current location is:', content.location.href);
+
+init();
 // end - load unload stuff
