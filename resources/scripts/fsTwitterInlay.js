@@ -53,62 +53,81 @@ function domInsertOnReady(aContentWindow) {
 			var aMsg = aContentWindow.prompt('Your message will be converted to an image and then attached to the tweet', 'Type message here');
 			if (aMsg) {
 				
-				// aContentDocument.documentElement.appendChild(myIframe);
-				
-				var fontFamily = 'arial';
-				var fontWeight = 'bold';
-				var fontSize = '30px';
-				var maxWidth = '300px';
-				var backgroundColor = 'red';
-				
-				var myDummy = aContentDocument.createElementNS(NS_HTML, 'span');
-				myDummy.setAttribute('style', 'font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0; position:absolute; top:0; left:0; z-index:999999;');
-				myDummy.textContent = aMsg;
-				
-				aContentDocument.documentElement.appendChild(myDummy);
-				
-				var blockWidth = myDummy.offsetWidth;
-				var blockHeight = myDummy.offsetHeight;
-				console.error('blockWidth:', blockWidth);
-				console.error('blockHeight:', blockHeight);
-				
-				aContentDocument.documentElement.removeChild(myDummy);
-				
-				var myCan = aContentDocument.createElementNS(NS_HTML, 'canvas');
-				myCan.width = blockWidth;
-				myCan.height = blockHeight;
-				var myCtx = myCan.getContext('2d');
-				
-				
-				var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + blockWidth + '" height="' + blockHeight + '" style="margin:0;padding:0;">' +
-						   '<foreignObject width="100%" height="100%">' +
-						   '<div xmlns="http://www.w3.org/1999/xhtml" style="width:' + blockWidth + 'px; height:' + blockHeight + 'px; font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize + '; background-color:' + backgroundColor + '; margin:0; padding:0;">' +
-							 aMsg.replace(/'/g, '\'')  +
-						   '</div>' +
-						   '</foreignObject>' +
-						   '</svg>';
+				var myIframe = aContentDocument.createElementNS(NS_HTML, 'iframe');
+					myIframe.setAttribute('style', ' position:absolute; top:0; left:0; z-index:999999;');
+					
+					myIframe.addEventListener('load', function() {
+						console.error('iframe loaded!');
+						var fontFamily = 'arial';
+						var fontWeight = 'bold';
+						var fontSize = '30px';
+						var maxWidth = '300px';
+						var backgroundColor = 'red';
+						
+						var myDummy = myIframe.contentDocument.createElementNS(NS_HTML, 'div');
+						/*
+						var myDummy = jsonToDOM([
+							'svg', {xmlns:'http://www.w3.org/2000/svg'},
+								[
+									'foreignObject', {width:'100%', height:'100%'}.
+										[
+											'div', {xmlns:'http://www.w3.org/1999/xhtml', style:}
+										]
+								]
+						], myIframe.contentDocument, {});
+						*/
+						myDummy.setAttribute('style', 'display:inline; font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0;');
+						myDummy.textContent = aMsg;
+						
+						myIframe.contentDocument.documentElement.appendChild(myDummy);
+						
+						console.log('myDummy.boxObject:', myDummy.boxObject);
+						
+						var blockWidth = myDummy.offsetWidth + 1;
+						var blockHeight = myDummy.offsetHeight + 1;
+						console.error('blockWidth:', blockWidth);
+						console.error('blockHeight:', blockHeight);
+						
+						// myIframe.contentDocument.documentElement.removeChild(myDummy);
+						
+						var myCan = myIframe.contentDocument.createElementNS(NS_HTML, 'canvas');
+						myCan.width = blockWidth;
+						myCan.height = blockHeight;
+						var myCtx = myCan.getContext('2d');
+						
+						
+						var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + blockWidth + '" height="' + blockHeight + '" style="margin:0;padding:0;">' +
+								   '<foreignObject width="100%" height="100%">' +
+								   '<div xmlns="http://www.w3.org/1999/xhtml" style="font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0;">' +
+									 aMsg.replace(/'/g, '\'')  +
+								   '</div>' +
+								   '</foreignObject>' +
+								   '</svg>';
 
-				var DOMURL = aContentWindow.URL;
+						var DOMURL = aContentWindow.URL;
 
-				var img = new aContentWindow.Image();
-				var svg = new aContentWindow.Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-				var url = DOMURL.createObjectURL(svg);
+						var img = new aContentWindow.Image();
+						var svg = new aContentWindow.Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+						var url = DOMURL.createObjectURL(svg);
 
-				var attachImg = aContentDocument.createElementNS(NS_HTML, 'img');
+						var attachImg = myIframe.contentDocument.createElementNS(NS_HTML, 'img');
+						
+						img.onload = function () {
+							myCtx.drawImage(img, 0, 0);
+							DOMURL.revokeObjectURL(url);
+							attachImg.setAttribute('src', myCan.toDataURL('image/png', ''));
+							tweetEditor[aI].appendChild(attachImg);
+							// attachImg.setAttribute('src', url);
+							console.error('attachImg.src:', attachImg.src);
+							// myIframe.contentDocument.documentElement.insertBefore(attachImg, myIframe.contentDocument.documentElement.firstChild);
+						}
+						
+						img.src = url;
+				}, true);
 				
-				img.onload = function () {
-					myCtx.drawImage(img, 0, 0);
-					DOMURL.revokeObjectURL(url);
-					attachImg.setAttribute('src', myCan.toDataURL('image/png', ''));
-					tweetEditor[aI].appendChild(attachImg);
-					// attachImg.setAttribute('src', url);
-					console.error('attachImg.src:', attachImg.src);
-					// aContentDocument.documentElement.insertBefore(attachImg, aContentDocument.documentElement.firstChild);
-				}
-				
-				img.src = url;
-				
+				aContentDocument.documentElement.appendChild(myIframe);
 			}
+			
 			tweetEditor[aI].focus();
 		}.bind(myEls.rawr, i), false);
 		
