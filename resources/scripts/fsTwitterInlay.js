@@ -172,7 +172,7 @@ function doOnReady(aContentWindow) {
 				// twitterReady = true;
 				console.error('ok twitter page ready, lets ensure page loaded finished');
 				domInsertOnReady(aContentWindow);
-				ensureLoaded(aContentWindow);
+				ensureLoaded(aContentWindow); // :note: commented out as not needing content script right now
 			}
 		} else {
 			// console.log('page ready, but its not twitter so do nothing:', uneval(aContentWindow.location));
@@ -290,7 +290,7 @@ var bootstrapCallbacks = { // can use whatever, but by default it uses this
 				}
 			}
 		}
-		
+
 		contentMMFromContentWindow_Method2(content).removeMessageListener(core.addon.id, bootstrapMsgListener);
 	}
 };
@@ -300,7 +300,7 @@ function sendAsyncMessageWithCallback(aMessageManager, aGroupId, aMessageArr, aC
 	sam_last_cb_id++;
 	var thisCallbackId = SAM_CB_PREFIX + sam_last_cb_id;
 	aCallbackScope = aCallbackScope ? aCallbackScope : bootstrap; // :todo: figure out how to get global scope here, as bootstrap is undefined
-	console.error('adding to funcScope:', thisCallbackId);
+	console.error('adding to funcScope:', thisCallbackId, content.location.href);
 	aCallbackScope[thisCallbackId] = function(aMessageArr) {
 		delete aCallbackScope[thisCallbackId];
 		aCallback.apply(null, aMessageArr);
@@ -312,7 +312,7 @@ var bootstrapMsgListener = {
 	funcScope: bootstrapCallbacks,
 	receiveMessage: function(aMsgEvent) {
 		var aMsgEventData = aMsgEvent.data;
-		console.log('framescript getting aMsgEvent, unevaled:', uneval(aMsgEventData));
+		console.error('framescript getting aMsgEvent, unevaled:', aMsgEventData);
 		// aMsgEvent.data should be an array, with first item being the unfction name in this.funcScope
 		
 		var callbackPendingId;
@@ -348,11 +348,10 @@ var bootstrapMsgListener = {
 				}
 			}
 		}
-		else { console.warn('funcName', funcName, 'not in scope of this.funcScope', this.funcScope) } // else is intentionally on same line with console. so on finde replace all console. lines on release it will take this out
+		else { console.warn('funcName', funcName, 'not in scope of this.funcScope', this.funcScope, content.location.href) } // else is intentionally on same line with console. so on finde replace all console. lines on release it will take this out
 		
 	}
 };
-contentMMFromContentWindow_Method2(content).addMessageListener(core.addon.id, bootstrapMsgListener);
 // end - server/framescript comm layer
 // start - common helper functions
 var gCFMM;
@@ -479,23 +478,25 @@ function onPageReady(aEvent) {
 
 function init() {
 	console.error('in init');
-	sendAsyncMessageWithCallback(contentMMFromContentWindow_Method2(content), core.addon.id, ['requestInit'], bootstrapMsgListener.funcScope, function(aData) {
-		// core = aData.aCore;
-		console.error('back in callback', aData);
-		l10n = aData.aL10n
-		console.error('set l10n to:', aData.aL10n)
+		contentMMFromContentWindow_Method2(content).addMessageListener(core.addon.id, bootstrapMsgListener);
 		
-		addEventListener('unload', fsUnloaded, false);
-		addEventListener('DOMContentLoaded', onPageReady, false);
-		if (content.document.readyState == 'complete') {
-			var fakeEvent = {
-				target: {
-					defaultView: content
+		sendAsyncMessageWithCallback(contentMMFromContentWindow_Method2(content), core.addon.id, ['requestInit'], bootstrapMsgListener.funcScope, function(aData) {
+			// core = aData.aCore;
+			console.error('back in callback', aData, content.location.href);
+			l10n = aData.aL10n
+			console.error('set l10n to:', aData.aL10n, content.location.href)
+			
+			addEventListener('unload', fsUnloaded, false);
+			addEventListener('DOMContentLoaded', onPageReady, false);
+			if (content.document.readyState == 'complete') {
+				var fakeEvent = {
+					target: {
+						defaultView: content
+					}
 				}
+				onPageReady(fakeEvent);
 			}
-			onPageReady(fakeEvent);
-		}
-	});
+		});
 }
 
 init();

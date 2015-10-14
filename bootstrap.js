@@ -55,11 +55,17 @@ function startup(aData, aReason) {
 	// core.addon.aData = aData;
 	extendCore();
 	
-	// register framescript listener
-	Services.mm.addMessageListener(core.addon.id, fsMsgListener);
-	
-	// register framescript injector
-	Services.mm.loadFrameScript(core.addon.path.scripts + 'fsTwitterInlay.js?' + core.addon.cache_key, true);
+	var aTimer = Cc['@mozilla.org/timer;1'].createInstance(Ci.nsITimer);
+	aTimer.initWithCallback({
+		notify: function() {
+			console.error('ok starting up adding');
+			// register framescript listener
+			Services.mm.addMessageListener(core.addon.id, fsMsgListener);
+			
+			// register framescript injector
+			Services.mm.loadFrameScript(core.addon.path.scripts + 'fsTwitterInlay.js?' + core.addon.cache_key, true);
+		}
+	}, 1000, Ci.nsITimer.TYPE_ONE_SHOT);
 	
 }
 
@@ -79,7 +85,7 @@ function shutdown(aData, aReason) {
 // start - server/framescript comm layer
 // functions for framescripts to call in main thread
 var fsFuncs = { // can use whatever, but by default its setup to use this
-	requestInit: function() {
+	requestInit: function(aMsgEvent) {
 		// start - l10n injection into fs
 		
 		console.error('in requestinit server side');
@@ -142,6 +148,7 @@ var fsMsgListener = {
 					);
 				} else {
 					// assume array
+					console.error('ok responding to callback id:', callbackPendingId);
 					aMsgEvent.target.messageManager.sendAsyncMessage(core.addon.id, [callbackPendingId, rez_parentscript_call]);
 				}
 			}
