@@ -172,7 +172,7 @@ function doOnReady(aContentWindow) {
 				// twitterReady = true;
 				console.error('ok twitter page ready, lets ensure page loaded finished');
 				domInsertOnReady(aContentWindow);
-				ensureLoaded(aContentWindow); // :note: commented out as not needing content script right now
+				// ensureLoaded(aContentWindow); // :note: commented out as not needing content script right now
 			}
 		} else {
 			// console.log('page ready, but its not twitter so do nothing:', uneval(aContentWindow.location));

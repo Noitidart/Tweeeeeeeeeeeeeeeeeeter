@@ -89,7 +89,7 @@ var fsFuncs = { // can use whatever, but by default its setup to use this
 		// start - l10n injection into fs
 		
 		console.error('in requestinit server side');
-		l10n = {};
+		var l10n = {};
 		// get all the localized strings into ng
 		var l10ns = myServices.sb_ti.getSimpleEnumeration();
 		while (l10ns.hasMoreElements()) {
@@ -148,7 +148,7 @@ var fsMsgListener = {
 					);
 				} else {
 					// assume array
-					console.error('ok responding to callback id:', callbackPendingId);
+					console.warn('ok responding to callback id:', callbackPendingId, aMsgEvent.target);
 					aMsgEvent.target.messageManager.sendAsyncMessage(core.addon.id, [callbackPendingId, rez_parentscript_call]);
 				}
 			}
