@@ -92,69 +92,69 @@ function onBtnClick(aTweetEditor) {
 	if (aMsg) {
 
 		var myIframe = document.createElement('iframe');
-			myIframe.setAttribute('style', 'position:absolute; top:0; left:0; z-index:999999;visibility:hidden; min-width:' + maxWidth + ';');
+		myIframe.setAttribute('style', 'position:absolute; top:0; left:0; z-index:999999;visibility:hidden; min-width:' + maxWidth + ';');
 
-			myIframe.addEventListener('load', function() {
-				console.error('iframe loaded!');
-
-
-				var myDummy = myIframe.contentDocument.createElement('div');
-				/*
-				var myDummy = jsonToDOM([
-					'svg', {xmlns:'http://www.w3.org/2000/svg'},
-						[
-							'foreignObject', {width:'100%', height:'100%'}.
-								[
-									'div', {xmlns:'http://www.w3.org/1999/xhtml', style:}
-								]
-						]
-				], myIframe.contentDocument, {});
-				*/
-				myDummy.setAttribute('style', 'display:inline; font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0;');
-				myDummy.textContent = aMsg;
-
-				myIframe.contentDocument.documentElement.appendChild(myDummy);
-
-				console.log('myDummy.boxObject:', myDummy.boxObject);
-
-				var blockWidth = myDummy.offsetWidth + 1;
-				var blockHeight = myDummy.offsetHeight + 1;
-				console.error('blockWidth:', blockWidth);
-				console.error('blockHeight:', blockHeight);
-
-				// myIframe.contentDocument.documentElement.removeChild(myDummy);
-
-				var myCan = myIframe.contentDocument.createElement('canvas');
-				myCan.width = blockWidth;
-				myCan.height = blockHeight;
-				var myCtx = myCan.getContext('2d');
+		myIframe.addEventListener('load', function() {
+			console.error('iframe loaded!');
 
 
-				var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + blockWidth + '" height="' + blockHeight + '" style="margin:0;padding:0;">' +
-						   '<foreignObject width="100%" height="100%">' +
-						   '<div xmlns="http://www.w3.org/1999/xhtml" style="font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0;">' +
-							 aMsg.replace(/'/g, '\'')  +
-						   '</div>' +
-						   '</foreignObject>' +
-						   '</svg>';
+			var myDummy = myIframe.contentDocument.createElement('div');
+			/*
+			var myDummy = jsonToDOM([
+				'svg', {xmlns:'http://www.w3.org/2000/svg'},
+					[
+						'foreignObject', {width:'100%', height:'100%'}.
+							[
+								'div', {xmlns:'http://www.w3.org/1999/xhtml', style:}
+							]
+					]
+			], myIframe.contentDocument, {});
+			*/
+			myDummy.setAttribute('style', 'display:inline; font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0;');
+			myDummy.textContent = aMsg;
 
-				var img = new Image();
-				var svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-				var url = URL.createObjectURL(svg);
+			myIframe.contentDocument.documentElement.appendChild(myDummy);
 
-				var attachImg = myIframe.contentDocument.createElement('img');
+			console.log('myDummy.boxObject:', myDummy.boxObject);
 
-				img.onload = function () {
-					myCtx.drawImage(img, 0, 0);
-					URL.revokeObjectURL(url);
-					attachImg.setAttribute('src', myCan.toDataURL('image/png', ''));
-					aTweetEditor.appendChild(attachImg);
-					// attachImg.setAttribute('src', url);
-					console.error('attachImg.src:', attachImg.src);
-					myIframe.parentNode.removeChild(myIframe);
-				}
+			var blockWidth = myDummy.offsetWidth + 1;
+			var blockHeight = myDummy.offsetHeight + 1;
+			console.error('blockWidth:', blockWidth);
+			console.error('blockHeight:', blockHeight);
 
-				img.src = url;
+			// myIframe.contentDocument.documentElement.removeChild(myDummy);
+
+			var myCan = myIframe.contentDocument.createElement('canvas');
+			myCan.width = blockWidth;
+			myCan.height = blockHeight;
+			var myCtx = myCan.getContext('2d');
+
+
+			var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + blockWidth + '" height="' + blockHeight + '" style="margin:0;padding:0;">' +
+					   '<foreignObject width="100%" height="100%">' +
+					   '<div xmlns="http://www.w3.org/1999/xhtml" style="font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0;">' +
+						 aMsg.replace(/'/g, '\'')  +
+					   '</div>' +
+					   '</foreignObject>' +
+					   '</svg>';
+
+			var img = new Image();
+			var svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+			var url = URL.createObjectURL(svg);
+
+			var attachImg = myIframe.contentDocument.createElement('img');
+
+			img.onload = function () {
+				myCtx.drawImage(img, 0, 0);
+				URL.revokeObjectURL(url);
+				attachImg.setAttribute('src', myCan.toDataURL('image/png', ''));
+				aTweetEditor.appendChild(attachImg);
+				// attachImg.setAttribute('src', url);
+				console.error('attachImg.src:', attachImg.src);
+				myIframe.parentNode.removeChild(myIframe);
+			}
+
+			img.src = url;
 		}, true);
 
 		document.documentElement.appendChild(myIframe);
