@@ -72,6 +72,7 @@ function startup(aData, aReason) {
 		// formatStringFromName('blah', 'chrome://global/locale/dateFormat.properties');
 		console.log('_cache_formatStringFromName_packages:', _cache_formatStringFromName_packages);
 		core.addon.l10n = _cache_formatStringFromName_packages;
+		console.log('core.addon.l10n:', core.addon.l10n);
 
 		gFsComm = new Comm.server.framescript(core.addon.id);
 

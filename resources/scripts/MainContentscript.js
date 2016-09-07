@@ -6,9 +6,140 @@ var { callInFramescript, callInMainworker, callInBootstrap } = CommHelper.conten
 function init() {
 	// alert('initing');
 	callInBootstrap('fetchCore', undefined, function(aArg, aComm) {
-		core = aArg;
-		alert('got core:', uneval(core));
-		domInsertOnReady(window);
+		core = aArg.core;
+
+		var fontFamily = 'arial';
+		var fontWeight = 'bold';
+		var fontSize = '24px';
+		var maxWidth = '600px';
+		var backgroundColor = 'white';
+
+		// insert style sheet
+		document.documentElement.appendChild(jsonToDOM(
+			['style', {class:'tweeeeeeeeeeeeeeeeeeter'},
+				`
+					.tweeeeeeeeeeeeeeeeeeter .Icon::before {
+					    color: transparent;
+					    background: transparent url("chrome://tweeeeeeeeeeeeeeeeeeter/content/resources/images/baloons16-dar.png") no-repeat scroll center center;
+					}
+				`
+			]
+		, document, {}));
+
+		// domInsertOnReady(window);
+
+		var tweetForms = document.querySelectorAll('form.tweet-form');
+		console.error('tweetForms:', tweetForms);
+
+		for (var i=0; i<tweetForms.length; i++) {
+			// var tweetBtn = teetToolbarColl[i].querySelector('.tweet-button');
+			var tweetEditor = tweetForms[i].querySelector('.rich-editor');
+			var tweetBoxExtras = tweetForms[i].querySelector('.tweet-box-extras');
+			if (!tweetBoxExtras || !tweetEditor) {
+				console.warn('an element was not found in tweet from number:', i, 'tweetBoxExtras:', tweetBoxExtras, 'tweetEditor:', tweetEditor)
+				continue;
+			}
+			var myEls = {};
+			var tweeeeeeeeeeeeeeeeeeterBtn = jsonToDOM([
+				'span', {class:'TweetBoxExtras-item tweeeeeeeeeeeeeeeeeeter'},
+					[
+						'div', {class:'noit'},
+							[
+								'button', {key:'rawr', class:'btn icon-btn js-tooltip', 'data-original-title':formatStringFromNameCore('btn-label', 'main'), type:'button', tabindex:'-1', 'aria-hidden':'true'},
+									[
+										'span', {class:'tweet-camera Icon Icon--camera'}
+									],
+									[
+										'span', {class:'text u-hiddenVisually'},
+											formatStringFromNameCore('btn-label', 'main')
+									]
+							]
+					]
+			], document, myEls);
+
+			console.log('myEls:', myEls);
+			myEls.rawr.addEventListener('click', function(aTweetEditor) {
+				var aMsg = window.prompt(formatStringFromNameCore('prompt-body', 'main'), formatStringFromNameCore('prompt-prefill', 'main'));
+				if (aMsg) {
+
+					var myIframe = document.createElementNS(NS_HTML, 'iframe');
+						myIframe.setAttribute('style', 'position:absolute; top:0; left:0; z-index:999999;visibility:hidden; min-width:' + maxWidth + ';');
+
+						myIframe.addEventListener('load', function() {
+							console.error('iframe loaded!');
+
+
+							var myDummy = myIframe.contentDocument.createElementNS(NS_HTML, 'div');
+							/*
+							var myDummy = jsonToDOM([
+								'svg', {xmlns:'http://www.w3.org/2000/svg'},
+									[
+										'foreignObject', {width:'100%', height:'100%'}.
+											[
+												'div', {xmlns:'http://www.w3.org/1999/xhtml', style:}
+											]
+									]
+							], myIframe.contentDocument, {});
+							*/
+							myDummy.setAttribute('style', 'display:inline; font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0;');
+							myDummy.textContent = aMsg;
+
+							myIframe.contentDocument.documentElement.appendChild(myDummy);
+
+							console.log('myDummy.boxObject:', myDummy.boxObject);
+
+							var blockWidth = myDummy.offsetWidth + 1;
+							var blockHeight = myDummy.offsetHeight + 1;
+							console.error('blockWidth:', blockWidth);
+							console.error('blockHeight:', blockHeight);
+
+							// myIframe.contentDocument.documentElement.removeChild(myDummy);
+
+							var myCan = myIframe.contentDocument.createElementNS(NS_HTML, 'canvas');
+							myCan.width = blockWidth;
+							myCan.height = blockHeight;
+							var myCtx = myCan.getContext('2d');
+
+
+							var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + blockWidth + '" height="' + blockHeight + '" style="margin:0;padding:0;">' +
+									   '<foreignObject width="100%" height="100%">' +
+									   '<div xmlns="http://www.w3.org/1999/xhtml" style="font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0;">' +
+										 aMsg.replace(/'/g, '\'')  +
+									   '</div>' +
+									   '</foreignObject>' +
+									   '</svg>';
+
+							var DOMURL = window.URL;
+
+							var img = new aContentWindow.Image();
+							var svg = new aContentWindow.Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+							var url = DOMURL.createObjectURL(svg);
+
+							var attachImg = myIframe.contentDocument.createElementNS(NS_HTML, 'img');
+
+							img.onload = function () {
+								myCtx.drawImage(img, 0, 0);
+								DOMURL.revokeObjectURL(url);
+								attachImg.setAttribute('src', myCan.toDataURL('image/png', ''));
+								aTweetEditor.appendChild(attachImg);
+								// attachImg.setAttribute('src', url);
+								console.error('attachImg.src:', attachImg.src);
+								myIframe.parentNode.removeChild(myIframe);
+							}
+
+							img.src = url;
+					}, true);
+
+					document.documentElement.appendChild(myIframe);
+				}
+
+				aTweetEditor.focus();
+			}.bind(myEls.rawr, tweetEditor), false);
+
+			tweetBoxExtras.insertBefore(tweeeeeeeeeeeeeeeeeeterBtn, tweetBoxExtras.firstChild);
+		}
+
+
 	});
 }
 
@@ -32,149 +163,64 @@ function stopEvent(e) {
 	e.preventDefault();
 }
 
+var try_cnt = 0;
 function domInsertOnReady() {
 
-	var tweetForms = document.querySelectorAll('form.tweet-form');
-	console.error('tweetForms:', tweetForms);
+	// var tweetForms = document.querySelectorAll('form.tweet-form');
+	// console.error('tweetForms:', tweetForms);
+	// for (var i=0; i<tweetForms.length; i++) {
+	// 	// var tweetBtn = teetToolbarColl[i].querySelector('.tweet-button');
+	// 	var tweetEditor = tweetForms[i].querySelector('.rich-editor');
+	// 	var tweetBoxExtras = tweetForms[i].querySelector('.tweet-box-extras');
+	// 	if (!tweetBoxExtras || !tweetEditor) {
+	// 		console.warn('an element was not found in tweet from number:', i, 'tweetBoxExtras:', tweetBoxExtras, 'tweetEditor:', tweetEditor)
+	// 		continue;
+	// 	}
+	// }
 
 	// var tweetToolbarColl = aContentDocument.querySelectorAll('form.tweet-form .toolbar');
 	// console.error('tweetToolbarColl:', tweetToolbarColl);
 
-	var fontFamily = 'arial';
-	var fontWeight = 'bold';
-	var fontSize = '24px';
-	var maxWidth = '600px';
-	var backgroundColor = 'white';
 
-	document.documentElement.appendChild(jsonToDOM(
-		['style', {class:'tweeeeeeeeeeeeeeeeeeter'},
-			`
-				.tweeeeeeeeeeeeeeeeeeter-TweetBox .Icon::before {
-				    color: transparent;
-				    background: transparent url("chrome://tweeeeeeeeeeeeeeeeeeter/content/resources/images/baloons16-dar.png") no-repeat scroll left center
-				}
-			`
-		]
-	, document, {}));
 
-	var extraitem = document.querySelector('#global-tweet-dialog-dialog .TweetBoxExtras-item:not(.TweetBox-mediaPicker)');
+	var extraitem = document.querySelector('.modal-tweet-form-container .TweetBoxExtras-item:not(.TweetBox-mediaPicker)');
+	if (!extraitem) {
+		try_cnt++;
+		setTimeout(domInsertOnReady, 100);
+		return;
+	}
 
-	console.log('extraitem:', extraitem);
+	console.log('try_cnt:', try_cnt, 'extraitem:', extraitem);
 	var saymore = extraitem.cloneNode(true);
 	saymore.classList.add('tweeeeeeeeeeeeeeeeeeter');
 	console.log('saymore:', saymore);
 
-	extraitem.parentNode.insertBefore(saymore, extraitem.parentNode.firstChild);
-	alert('ok inserted');
+	console.log('will insert');
+	var inserted = extraitem.parentNode.insertBefore(saymore, extraitem.parentNode.firstChild);
+	console.log('inserted:', inserted);
 
-	return;
-	for (var i=0; i<tweetForms.length; i++) {
-		// var tweetBtn = teetToolbarColl[i].querySelector('.tweet-button');
-		var tweetEditor = tweetForms[i].querySelector('.rich-editor');
-		var tweetBoxExtras = tweetForms[i].querySelector('.tweet-box-extras');
-		if (!tweetBoxExtras || !tweetEditor) {
-			console.warn('an element was not found in tweet from number:', i, 'tweetBoxExtras:', tweetBoxExtras, 'tweetEditor:', tweetEditor)
-			continue;
-		}
-		var myEls = {};
-		var tweeeeeeeeeeeeeeeeeeterBtn = jsonToDOM([
-			'span', {class:'tweeeeeeeeeeeeeeeeeeter-TweetBox tweeeeeeeeeeeeeeeeeeter'},
-				[
-					'div', {class:'geo-picker'},
-						[
-							'button', {key:'rawr', class:'btn icon-btn js-tooltip', 'data-original-title':l10n['btn-tooltip'], type:'button', tabindex:'-1', 'aria-hidden':'true'},
-								[
-									'span', {class:'tweet-camera Icon Icon--camera'}
-								],
-								[
-									'span', {class:'text add-photo-label u-hideMediumViewport'},
-										l10n['btn-label']
-								]
-						]
-				]
-		], aContentDocument, myEls);
+	markel(saymore);
+}
 
-		console.log('myEls:', myEls);
-		myEls.rawr.addEventListener('click', function(aTweetEditor) {
-			var aMsg = aContentWindow.prompt(l10n['prompt-body'], l10n['prompt-prefill']);
-			if (aMsg) {
-
-				var myIframe = aContentDocument.createElementNS(NS_HTML, 'iframe');
-					myIframe.setAttribute('style', 'position:absolute; top:0; left:0; z-index:999999;visibility:hidden; min-width:' + maxWidth + ';');
-
-					myIframe.addEventListener('load', function() {
-						console.error('iframe loaded!');
-
-
-						var myDummy = myIframe.contentDocument.createElementNS(NS_HTML, 'div');
-						/*
-						var myDummy = jsonToDOM([
-							'svg', {xmlns:'http://www.w3.org/2000/svg'},
-								[
-									'foreignObject', {width:'100%', height:'100%'}.
-										[
-											'div', {xmlns:'http://www.w3.org/1999/xhtml', style:}
-										]
-								]
-						], myIframe.contentDocument, {});
-						*/
-						myDummy.setAttribute('style', 'display:inline; font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0;');
-						myDummy.textContent = aMsg;
-
-						myIframe.contentDocument.documentElement.appendChild(myDummy);
-
-						console.log('myDummy.boxObject:', myDummy.boxObject);
-
-						var blockWidth = myDummy.offsetWidth + 1;
-						var blockHeight = myDummy.offsetHeight + 1;
-						console.error('blockWidth:', blockWidth);
-						console.error('blockHeight:', blockHeight);
-
-						// myIframe.contentDocument.documentElement.removeChild(myDummy);
-
-						var myCan = myIframe.contentDocument.createElementNS(NS_HTML, 'canvas');
-						myCan.width = blockWidth;
-						myCan.height = blockHeight;
-						var myCtx = myCan.getContext('2d');
-
-
-						var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + blockWidth + '" height="' + blockHeight + '" style="margin:0;padding:0;">' +
-								   '<foreignObject width="100%" height="100%">' +
-								   '<div xmlns="http://www.w3.org/1999/xhtml" style="font-family:' + fontFamily + '; font-weight:' + fontWeight + '; font-size:' + fontSize+ '; max-width:' + maxWidth + '; background-color:' + backgroundColor + '; margin:0; padding:0;">' +
-									 aMsg.replace(/'/g, '\'')  +
-								   '</div>' +
-								   '</foreignObject>' +
-								   '</svg>';
-
-						var DOMURL = aContentWindow.URL;
-
-						var img = new aContentWindow.Image();
-						var svg = new aContentWindow.Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-						var url = DOMURL.createObjectURL(svg);
-
-						var attachImg = myIframe.contentDocument.createElementNS(NS_HTML, 'img');
-
-						img.onload = function () {
-							myCtx.drawImage(img, 0, 0);
-							DOMURL.revokeObjectURL(url);
-							attachImg.setAttribute('src', myCan.toDataURL('image/png', ''));
-							aTweetEditor.appendChild(attachImg);
-							// attachImg.setAttribute('src', url);
-							console.error('attachImg.src:', attachImg.src);
-							myIframe.parentNode.removeChild(myIframe);
-						}
-
-						img.src = url;
-				}, true);
-
-				aContentDocument.documentElement.appendChild(myIframe);
-			}
-
-			aTweetEditor.focus();
-		}.bind(myEls.rawr, tweetEditor), false);
-
-		tweetBoxExtras.insertBefore(tweeeeeeeeeeeeeeeeeeterBtn, tweetBoxExtras.firstChild);
+var try2 = 0;
+function markel(saymore) {
+	console.log('will set titleel');
+	var titleel = saymore.querySelector('[data-original-title]');
+	if (!titleel) {
+		try2++;
+		setTimeout(markel.bind(null, saymore), 100);
+		return;
 	}
+	alert('marked el try2: ' + try2);
+
+	titleel.setAttribute('data-original-title', formatStringFromNameCore('btn-label', 'main'));
+	console.log('titleel set');
+
+	var textel = saymore.querySelector('.text');
+	textel.textContent = formatStringFromNameCore('btn-label', 'main');
+
+	var btnel = saymore.querySelector('button');
+	btnel.setAttribute('class', 'btn js-dropdown-toggle icon-btn js-tooltip');
 }
 
 init();
