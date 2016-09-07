@@ -8,14 +8,23 @@
 		<em:version>1.1b</em:version>
 		<em:type>2</em:type>
 		<em:bootstrap>true</em:bootstrap>
+		<em:multiprocessCompatible>true</em:multiprocessCompatible>
 
 		<!-- Firefox -->
 		<em:targetApplication>
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-				<em:minVersion>7.0</em:minVersion> <!-- due to options page -->
-				<em:maxVersion>41.0</em:maxVersion> <!-- the latest version i tested it in -->
+				<em:minVersion>44.0</em:minVersion> <!-- not yet defined -->
+				<em:maxVersion>49.0</em:maxVersion> <!-- the latest version i tested it in -->
 			</Description>
+		</em:targetApplication>
+
+		<em:targetApplication>
+		  <Description>
+			<em:id>{aa3c5121-dab2-40e2-81ca-7ea25febc110}</em:id>
+			<em:minVersion>44.0</em:minVersion>
+			<em:maxVersion>49.0</em:maxVersion>
+		  </Description>
 		</em:targetApplication>
 
 		<!-- Front End MetaData -->
@@ -23,7 +32,6 @@
 		<em:name>Tweeeeeeeeeeeeeeeeeeter</em:name>
 		<em:description>Never run out of room in your tweet! Put all your hashtags(#) and callouts(@) in the text then use this and you'll never have to shut up again!</em:description>
 		<em:creator>Noitidart</em:creator>
-		<em:contributor>csp_lordalea for Icon</em:contributor>
 
 		<!-- start localizing - For each entry in default data MUST have equivalent in each localized block -->
 		<em:localized>
@@ -31,8 +39,6 @@
 				<em:locale>en-US</em:locale>
 				<em:name>Tweeeeeeeeeeeeeeeeeeter</em:name>
 				<em:description>Never run out of room in your tweet! Put all your hashtags(#) and callouts(@) in the text then use this and you'll never have to shut up again!</em:description>
-				<em:creator>Noitidart</em:creator>
-				<em:contributor>csp_lordalea for Icon</em:contributor>
 			</Description>
 		</em:localized>
 	  </Description>
