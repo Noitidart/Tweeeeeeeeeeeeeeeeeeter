@@ -286,7 +286,7 @@ function init() {
 		{
 			state: {
 				name: 'fontsize',
-				value: '3' // link492821
+				value: 4 // link492821
 			},
 			group: 'FONT',
 			name: 'Font Size',
@@ -308,13 +308,13 @@ function init() {
 					val: 2
 				},
 				{
-					label: 'Normal',
+					label: 'Samller',
 					rel: 'font',
 					robj: { size:3 },
 					val: 3
 				},
 				{
-					label: 'Bigger',
+					label: 'Normal',
 					rel: 'font',
 					robj: { size:4 },
 					val: 4
@@ -469,6 +469,10 @@ var Editable = React.createClass({
 		var fontsize_entry = gTools.find(el=>el.icon=='text-size'); // link492821
 		// document.execCommand('fontSize', fontsize_entry.state.value);
 
+		// return React.createElement('div', { id:'editable', contentEditable:true, style:editable_style },
+		// 	'rawr'
+		// );
+
 		return React.createElement('font', { size:fontsize_entry.state.value },
 			React.createElement('div', { id:'editable', contentEditable:true, style:editable_style },
 				'rawr'
@@ -534,9 +538,11 @@ var TextToolButton = React.createClass({
 	onClick: function() {
 		var { toolentry, toolstates } = this.props;
 
-		var { cmd, val } = toolentry;
+		var { cmd, val, func} = toolentry;
 		if (cmd) {
 			document.execCommand(cmd, false, val || null);
+		} else if (func) {
+			func();
 		}
 
 		document.getElementById('editable').focus();
@@ -583,6 +589,8 @@ var TextToolMenuItem = React.createClass({
 			var { val } = menuitem_entry;
 			document.execCommand(cmd, false, val || null);
 		}
+
+		document.getElementById('editable').focus();
 	},
 	render: function() {
 		var { menuitem_entry, eventKey } = this.props;
@@ -603,7 +611,7 @@ var Modals = React.createClass({
 
 		switch (modal) {
 			case 'canvassize':
-					doApply(ReactDOM.findDOMNode(this.refs.height).value, ReactDOM.findDOMNode(this.refs.width).value);
+					doApply( { h:parseInt(ReactDOM.findDOMNode(this.refs.height).value), w:parseInt(ReactDOM.findDOMNode(this.refs.width).value) });
 				break;
 		}
 	},
@@ -619,7 +627,7 @@ var Modals = React.createClass({
 		var contents;
 		switch(this.showing_for_name) {
 			case 'canvassize':
-					var { height, width } = this.props; // mapped state ex
+					var { canvassize={h:1,w:2} } = this.props; // mapped state ex
 					contents = [
 						React.createElement(ReactBootstrap.Modal.Header, { closeButton:true },
 							React.createElement(ReactBootstrap.Modal.Title, undefined,
@@ -631,13 +639,13 @@ var Modals = React.createClass({
 								React.createElement(ReactBootstrap.ControlLabel, undefined,
 									'Width:'
 								),
-								React.createElement(ReactBootstrap.FormControl, { type:'text', ref:'width', defaultValue:width })
+								React.createElement(ReactBootstrap.FormControl, { type:'text', ref:'width', defaultValue:canvassize.w })
 							),
 							React.createElement(ReactBootstrap.Form, { inline:true },
 								React.createElement(ReactBootstrap.ControlLabel, undefined,
 									'Height:'
 								),
-								React.createElement(ReactBootstrap.FormControl, { type:'text', ref:'height', defaultValue:height })
+								React.createElement(ReactBootstrap.FormControl, { type:'text', ref:'height', defaultValue:canvassize.h })
 							)
 						),
 						React.createElement(ReactBootstrap.Modal.Footer, undefined,
