@@ -31,46 +31,70 @@ function init() {
 		var tweetForms = document.querySelectorAll('form.tweet-form');
 		console.error('tweetForms:', tweetForms);
 
-		for (var i=0; i<tweetForms.length; i++) {
-			// var tweetBtn = teetToolbarColl[i].querySelector('.tweet-button');
-			var tweetEditor = tweetForms[i].querySelector('.rich-editor');
-			var tweetBoxExtras = tweetForms[i].querySelector('.tweet-box-extras');
-			if (!tweetBoxExtras || !tweetEditor) {
-				console.warn('an element was not found in tweet from number:', i, 'tweetBoxExtras:', tweetBoxExtras, 'tweetEditor:', tweetEditor)
-				continue;
-			}
-			var myEls = {};
-			var tweeeeeeeeeeeeeeeeeeterBtn = jsonToDOM([
-				'span', {class:'TweetBoxExtras-item tweeeeeeeeeeeeeeeeeeter'},
-					[
-						'div', {class:'noit'},
-							[
-								'button', {key:'rawr', class:'btn icon-btn js-tooltip', 'data-original-title':formatStringFromNameCore('btn-label', 'main'), type:'button', tabindex:'-1', 'aria-hidden':'true'},
-									[
-										'span', {class:'tweet-camera Icon Icon--camera'}
-									],
-									[
-										'span', {class:'text u-hiddenVisually'},
-											formatStringFromNameCore('btn-label', 'main')
-									]
-							]
-					]
-			], document, myEls);
-
-			console.log('myEls:', myEls);
-			myEls.rawr.addEventListener('click', onBtnClick.bind(myEls.rawr, tweetEditor), false);
-
-			tweetBoxExtras.insertBefore(tweeeeeeeeeeeeeeeeeeterBtn, tweetBoxExtras.firstChild);
+		for (var a_tweetform of tweetForms) {
+			injectIntoForm(a_tweetform);
 		}
+
+		gObserver.observe(document.body, { subtree: true, childList: true});
 
 
 	});
+}
+
+// create an gObserver instance
+var gObserver = new MutationObserver(function(mutations) {
+	mutations.forEach(function(mutation) {
+		// console.error(mutation.type, mutation.target.classList);
+		if (mutation.addedNodes.length && mutation.target.classList.contains('tweet-form')) {
+			console.log('ok injecting for mutaiton:', mutation);
+			injectIntoForm(mutation.target);
+		}
+	});
+});
+
+function injectIntoForm(tweetform) {
+	// var tweetBtn = teetToolbarColl[i].querySelector('.tweet-button');
+	console.log('in injectIntoForm');
+	var tweetEditor = tweetform.querySelector('.rich-editor');
+	var tweetBoxExtras = tweetform.querySelector('.tweet-box-extras');
+	if (!tweetBoxExtras || !tweetEditor) {
+		console.warn('an element was not found in tweet from number:', 'tweetBoxExtras:', tweetBoxExtras, 'tweetEditor:', tweetEditor)
+		return;
+	}
+	if (tweetform.querySelector('.tweeeeeeeeeeeeeeeeeeter')) {
+		console.log('already injected into this form');
+		return;
+	}
+	var myEls = {};
+	var tweeeeeeeeeeeeeeeeeeterBtn = jsonToDOM([
+		'span', {class:'TweetBoxExtras-item tweeeeeeeeeeeeeeeeeeter'},
+			[
+				'div', {class:'noit'},
+					[
+						'button', {key:'rawr', class:'btn icon-btn js-tooltip', 'data-original-title':formatStringFromNameCore('btn-label', 'main'), type:'button', tabindex:'-1', 'aria-hidden':'true'},
+							[
+								'span', {class:'tweet-camera Icon Icon--camera'}
+							],
+							[
+								'span', {class:'text u-hiddenVisually'},
+									formatStringFromNameCore('btn-label', 'main')
+							]
+					]
+			]
+	], document, myEls);
+
+	console.log('myEls:', myEls);
+	myEls.rawr.addEventListener('click', onBtnClick.bind(myEls.rawr, tweetEditor), false);
+
+	tweetBoxExtras.insertBefore(tweeeeeeeeeeeeeeeeeeterBtn, tweetBoxExtras.firstChild);
 }
 
 gFsComm = new Comm.client.content(init);
 
 function uninit() {
 	// alert('uniniting');
+	gObserver.disconnect();
+
 	var mystuff = content.document.querySelectorAll('.tweeeeeeeeeeeeeeeeeeter');
 	console.info('mystuff:', mystuff);
 	for (var el of mystuff) {
