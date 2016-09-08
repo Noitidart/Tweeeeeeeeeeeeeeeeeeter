@@ -38,59 +38,51 @@ function init() {
 			name: 'Style',
 			icon: 'menu-hamburger',
 			type: 'menu',
+			cmd: 'formatBlock',
 			menuitems: [
 				{
 					label: 'Code',
 					rel: 'pre',
-					cmd: 'formatBlock',
 					val: 'pre'
 				},
 				{
 					label: 'Quote',
 					rel: 'blockquote',
-					cmd: 'formatBlock',
 					val: 'blockquote'
 				},
 				{
 					label: 'Heading 1',
 					rel: 'h1',
-					cmd: 'formatBlock',
 					val: 'h1'
 				},
 				{
 					label: 'Heading 2',
 					rel: 'h2',
-					cmd: 'formatBlock',
 					val: 'h2'
 				},
 				{
 					label: 'Heading 3',
 					rel: 'h3',
-					cmd: 'formatBlock',
 					val: 'h3'
 				},
 				{
 					label: 'Heading 4',
 					rel: 'h4',
-					cmd: 'formatBlock',
 					val: 'h4'
 				},
 				{
 					label: 'Heading 5',
 					rel: 'h5',
-					cmd: 'formatBlock',
 					val: 'h5'
 				},
 				{
 					label: 'Heading 6',
 					rel: 'h6',
-					cmd: 'formatBlock',
 					val: 'h6'
 				},
 				{
 					label: 'Heading 7',
 					rel: 'h7',
-					cmd: 'formatBlock',
 					val: 'h7'
 				}
 			]
@@ -146,7 +138,7 @@ function init() {
 				name: 'strike'
 			},
 			group: 'BOLD',
-			name: 'Strike-through',
+			name: 'Strike',
 			type: 'button',
 			icon: 'strikethrough',
 			cmd: 'strikeThrough',
@@ -294,11 +286,14 @@ function init() {
 		{
 			state: {
 				name: 'fontsize',
-				value: '3' // link49282
+				value: '3' // link492821
 			},
 			group: 'FONT',
-			name: 'Font',
+			name: 'Font Size',
 			type: 'menu',
+			cmd: 'fontSize',
+			icon: 'text-size',
+			// val not set as it is taken from menuitem
 			menuitems: [
 				{
 					label: 'Tiny',
@@ -307,10 +302,34 @@ function init() {
 					val: 1
 				},
 				{
+					label: 'Small',
+					rel: 'font',
+					robj: { size:2 },
+					val: 2
+				},
+				{
 					label: 'Normal',
+					rel: 'font',
+					robj: { size:3 },
+					val: 3
+				},
+				{
+					label: 'Bigger',
 					rel: 'font',
 					robj: { size:4 },
 					val: 4
+				},
+				{
+					label: 'Large',
+					rel: 'font',
+					robj: { size:5 },
+					val: 5
+				},
+				{
+					label: 'Larger',
+					rel: 'font',
+					robj: { size:6 },
+					val: 6
 				},
 				{
 					label: 'Huge',
@@ -318,10 +337,7 @@ function init() {
 					robj: { size:7 },
 					val: 7
 				}
-			],
-			cmd: 'fontName',
-			icon: 'text-size'
-			// val not set as it is taken from menuitem
+			]
 		},
 		{
 			name: 'Insert Image',
@@ -367,10 +383,11 @@ function init() {
 	];
 
 	// set default font size
-	var fontsize_entry = gTools.find(el=>el.icon=='text-size'); // start index
+	// var fontsize_entry = gTools.find(el=>el.icon=='text-size'); // link492821
+	// document.execCommand('fontSize', fontsize_entry.state.value);
 
 	// populate `menuitems` field of the `font` entry
-	var fontname_entry = gTools.find(el=>el.icon=='font'); // start index
+	var fontname_entry = gTools.find(el=>el.icon=='font');
 	document.execCommand('fontName', false, fontname_entry.state.value); // set default font link49282
 	var fontname_menuitems = fontname_entry.menuitems;
 	for (var font of fonts) {
@@ -378,7 +395,6 @@ function init() {
 			label: font,
 			rel: 'span',
 			robj: { style:{fontFamily:font} },
-			cmd: 'fontName',
 			val: font
 		};
 		fontname_menuitems.push(fontname_menuitem);
@@ -450,8 +466,13 @@ var Editable = React.createClass({
 			direction: !toolstates.direction ? 'ltr' : 'rtl'
 		};
 
-		return React.createElement('div', { id:'editable', contentEditable:true, style:editable_style },
-			'rawr'
+		var fontsize_entry = gTools.find(el=>el.icon=='text-size'); // link492821
+		// document.execCommand('fontSize', fontsize_entry.state.value);
+
+		return React.createElement('font', { size:fontsize_entry.state.value },
+			React.createElement('div', { id:'editable', contentEditable:true, style:editable_style },
+				'rawr'
+			)
 		);
 	}
 });
@@ -481,32 +502,13 @@ var Tools = React.createClass({
 
 			switch (toolentry.type) {
 				case 'button':
-						// pushtarget.push(React.createElement('span', undefined, 0));
 						pushtarget.push(
-							React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip(toolentry.tooltip || toolentry.name) },
-								React.createElement(ReactBootstrap.Button, undefined,
-									React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
-								)
-							)
+							React.createElement(TextToolButton, { toolentry, toolstates })
 						);
 					break;
 				case 'menu':
-						// pushtarget.push(React.createElement('span', undefined, 1));
 						pushtarget.push(
-							React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip(toolentry.tooltip || toolentry.name) },
-								React.createElement(ReactBootstrap.Dropdown, { id:toolentry.name.toLowerCase().replace(/[^a-z]/g, '') + '_dropdown' },
-									React.createElement(ReactBootstrap.Dropdown.Toggle, undefined,
-										React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
-									),
-									React.createElement(ReactBootstrap.Dropdown.Menu, undefined,
-										toolentry.menuitems.map( (el, i) => {
-											return React.createElement(ReactBootstrap.MenuItem, { eventKey:i },
-												!el.rel ? el.label : React.createElement(el.rel, el.robj, el.label)
-											)
-										})
-									)
-								)
-							)
+							React.createElement(TextToolMenu, { toolentry, toolstates })
 						);
 					break;
 			}
@@ -525,6 +527,69 @@ var Tools = React.createClass({
 		return React.createElement(ReactBootstrap.ButtonToolbar, undefined,
 			tool_rels
 		);
+	}
+});
+
+var TextToolButton = React.createClass({
+	onClick: function() {
+		var { toolentry, toolstates } = this.props;
+
+		var { cmd, val } = toolentry;
+		if (cmd) {
+			document.execCommand(cmd, false, val || null);
+		}
+
+		document.getElementById('editable').focus();
+	},
+	render: function() {
+		var { toolentry, toolstates } = this.props;
+
+		return React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip(toolentry.tooltip || toolentry.name) },
+			React.createElement(ReactBootstrap.Button, { onClick:this.onClick },
+				React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
+			)
+		);
+	}
+});
+
+var TextToolMenu = React.createClass({
+	onClick: function() {
+		var { toolentry, toolstates } = this.props;
+
+		document.getElementById('editable').focus();
+	},
+	render: function() {
+		var { toolentry, toolstates } = this.props;
+
+		return React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip(toolentry.tooltip || toolentry.name) },
+			React.createElement(ReactBootstrap.Dropdown, { id:toolentry.name.toLowerCase().replace(/[^a-z]/g, '') + '_dropdown' },
+				React.createElement(ReactBootstrap.Dropdown.Toggle, { onClick:this.onClick },
+					React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
+				),
+				React.createElement(ReactBootstrap.Dropdown.Menu, undefined,
+					toolentry.menuitems.map( (el, i) => React.createElement(TextToolMenuItem, { toolentry, menuitem_entry:el, eventKey:i }))
+				)
+			)
+		);
+	}
+});
+
+var TextToolMenuItem = React.createClass({
+	onClick: function() {
+		var { toolentry, menuitem_entry } = this.props;
+
+		var { cmd } = toolentry;
+		if (cmd) {
+			var { val } = menuitem_entry;
+			document.execCommand(cmd, false, val || null);
+		}
+	},
+	render: function() {
+		var { menuitem_entry, eventKey } = this.props;
+
+		return React.createElement(ReactBootstrap.MenuItem, { eventKey, onClick:this.onClick },
+			!menuitem_entry.rel ? menuitem_entry.label : React.createElement(menuitem_entry.rel, menuitem_entry.robj, menuitem_entry.label)
+		)
 	}
 });
 
