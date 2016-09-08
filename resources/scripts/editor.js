@@ -1,9 +1,12 @@
 function init() {
 	app = Redux.combineReducers({
+		// tools
 		background_rgba,
 		bold,
 		height,
-		width
+		width,
+		// other
+		modal
 	});
 
 	store = Redux.createStore(app);
@@ -27,16 +30,19 @@ var App = React.createClass({
 	render: function() {
 
 		return React.createElement('div', { id:'app_wrap', className:'app-wrap' },
-			React.createElement(EditorWrap)
+			React.createElement(EditorWrapContainer)
 		);
 	}
 });
 
 var EditorWrap = React.createClass({
 	render: function() {
+		var { modal } = this.props; // mapped state
+
 		return React.createElement('div', { className:'panel panel-default' },
 			React.createElement(ToolsContainer),
-			React.createElement(EditableContainer)
+			React.createElement(EditableContainer),
+			React.createElement(ModalsContainer, { modal })
 		);
 	}
 });
@@ -61,7 +67,7 @@ var Editable = React.createClass({
 var Tools = React.createClass({
 	render: function() {
 		// var {  } = this.props; // mapped state
-		var { toggleBold } = this.props; // dispatchers
+		var { toggleBold, showResizeModal } = this.props; // dispatchers
 
 		return React.createElement(ReactBootstrap.ButtonToolbar, undefined,
 			React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip('Style') },
@@ -132,6 +138,11 @@ var Tools = React.createClass({
 					)
 				)
 			),
+			React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip('Direction') },
+				React.createElement(ReactBootstrap.Button, undefined,
+					React.createElement(ReactBootstrap.Glyphicon, { glyph:'sort', style:{transform:'rotate(90deg)'} })
+				)
+			),
 			React.createElement(ReactBootstrap.ButtonGroup, undefined,
 				React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip('Align Left') },
 					React.createElement(ReactBootstrap.Button, undefined,
@@ -200,7 +211,7 @@ var Tools = React.createClass({
 					)
 				),
 				React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip('Resize') },
-					React.createElement(ReactBootstrap.Button, undefined,
+					React.createElement(ReactBootstrap.Button, { onClick:showResizeModal },
 						React.createElement(ReactBootstrap.Glyphicon, { glyph:'fullscreen' })
 					)
 				)
@@ -210,6 +221,84 @@ var Tools = React.createClass({
 });
 
 const Tooltip = txt => React.createElement(ReactBootstrap.Tooltip, undefined, txt);
+
+var Modals = React.createClass({
+	showing_for_name: null,
+	doApply: function() {
+		var { modal } = this.props; // mapped state
+		var { doApply } = this.props; // dispatchers
+
+		switch (modal) {
+			case 'resize':
+					doApply(ReactDOM.findDOMNode(this.refs.height).value, ReactDOM.findDOMNode(this.refs.width).value);
+				break;
+		}
+	},
+	render: function() {
+		var { modal } = this.props; // mapped state
+		var { doClose } = this.props; // dispatchers
+
+		if (modal) {
+			this.showing_for_name = modal;
+		}
+
+		// determine `contents` based on name
+		var contents;
+		switch(this.showing_for_name) {
+			case 'resize':
+					var { height, width } = this.props; // mapped state ex
+					contents = [
+						React.createElement(ReactBootstrap.Modal.Header, { closeButton:true },
+							React.createElement(ReactBootstrap.Modal.Title, undefined,
+								'Resize Canvas'
+							)
+						),
+						React.createElement(ReactBootstrap.Modal.Body, undefined,
+							React.createElement(ReactBootstrap.Form, { inline:true },
+								React.createElement(ReactBootstrap.ControlLabel, undefined,
+									'Width:'
+								),
+								React.createElement(ReactBootstrap.FormControl, { type:'text', ref:'width', defaultValue:width })
+							),
+							React.createElement(ReactBootstrap.Form, { inline:true },
+								React.createElement(ReactBootstrap.ControlLabel, undefined,
+									'Height:'
+								),
+								React.createElement(ReactBootstrap.FormControl, { type:'text', ref:'height', defaultValue:height })
+							)
+						),
+						React.createElement(ReactBootstrap.Modal.Footer, undefined,
+							React.createElement(ReactBootstrap.Button, { onClick:doClose },
+								'Cancel'
+							),
+							React.createElement(ReactBootstrap.Button, { onClick:this.doApply, bsStyle:'primary' },
+								'Apply'
+							)
+						)
+					];
+				break;
+			default:
+				contents = [
+					React.createElement(ReactBootstrap.Modal.Header, { closeButton:true },
+						React.createElement(ReactBootstrap.Modal.Title, undefined,
+							'Modal not yet shown'
+						)
+					),
+					React.createElement(ReactBootstrap.Modal.Body, undefined,
+						'(not yet shown)'
+					),
+					React.createElement(ReactBootstrap.Modal.Footer, undefined,
+						React.createElement(ReactBootstrap.Button, { onClick:doClose },
+							'Cancel'
+						)
+					)
+				];
+		}
+		return React.createElement(ReactBootstrap.Modal, { show:!!modal, onHide:doClose },
+			contents
+		)
+	}
+});
 
 // REACT COMPONENTS - CONTAINER
 var EditableContainer = ReactRedux.connect(
@@ -232,13 +321,58 @@ var ToolsContainer = ReactRedux.connect(
 	},
 	function mapDispatchToProps(dispatch, ownProps) {
 		return {
-			toggleBold: ()=>dispatch(toggleTool('bold'))
+			toggleBold: ()=>dispatch(toggleTool('bold')),
+			showResizeModal: ()=>dispatch(showModal('resize'))
 		};
 	}
 )(Tools);
 
+var EditorWrapContainer = ReactRedux.connect(
+	function mapStateToProps(state, ownProps) {
+		return {
+			modal: state.modal
+		}
+	}
+)(EditorWrap);
+
+var ModalsContainer = ReactRedux.connect(
+	function mapStateToProps(state, ownProps) {
+		var rez = {};
+
+		switch (ownProps.modal) {
+			case 'resize':
+					rez.height = state.height;
+					rez.width = state.width;
+				break;
+		}
+
+		return rez;
+	},
+	function mapDispatchToProps(dispatch, ownProps) {
+		var rez = {
+			doClose: ()=>dispatch(closeModal())
+		};
+
+		switch (ownProps.modal) {
+			case 'resize':
+					rez.doApply = (height, width)=> {
+						dispatch(setValues({height, width}));
+						rez.doClose();
+					};
+				break;
+		}
+
+		return rez;
+	}
+)(Modals);
+
 // ACTIONS
 const TOGGLE_TOOL = 'TOGGLE_TOOL';
+
+const CLOSE_MODAL = 'CLOSE_MODAL';
+const SHOW_MODAL = 'SHOW_MODAL';
+
+const SET_VALUES = 'SET_VALUES';
 
 // ACTION CREATORS
 function toggleTool(tool) {
@@ -249,6 +383,25 @@ function toggleTool(tool) {
 	}
 }
 
+function showModal(name) {
+	return {
+		type: SHOW_MODAL,
+		name
+	}
+}
+
+function closeModal() {
+	return {
+		type: CLOSE_MODAL
+	}
+}
+
+function setValues(obj) {
+	return {
+		type: SET_VALUES,
+		obj
+	}
+}
 // REDUCERS
 var hydrant = {
 	background_rgba: [255, 255, 255, 1],
@@ -268,6 +421,8 @@ var fonts = [
 ];
 function background_rgba(state=hydrant.background_rgba, action) {
 	switch (action.type) {
+		case SET_VALUES:
+			return ('background_rgba' in action.obj) ? action.obj.background_rgba : state;
 		default:
 			return state;
 	}
@@ -281,18 +436,36 @@ function bold(state=hydrant.bold, action) {
 			} else {
 				return state;
 			}
+		case SET_VALUES:
+			return ('bold' in action.obj) ? action.obj.bold : state;
 		default:
 			return state;
 	}
 }
 function height(state=hydrant.height, action) {
 	switch (action.type) {
+		case SET_VALUES:
+			return ('height' in action.obj) ? action.obj.height : state;
+		default:
+			return state;
+	}
+}
+function modal(state=null, action) {
+	switch (action.type) {
+		case SHOW_MODAL:
+				return action.name;
+			break;
+		case CLOSE_MODAL:
+				return null;
+			break;
 		default:
 			return state;
 	}
 }
 function width(state=hydrant.width, action) {
 	switch (action.type) {
+		case SET_VALUES:
+			return ('width' in action.obj) ? action.obj.width : state;
 		default:
 			return state;
 	}

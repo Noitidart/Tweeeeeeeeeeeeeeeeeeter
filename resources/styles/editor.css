@@ -12,9 +12,9 @@
 
 .panel-default {
 	background-color: #eee;
-	padding: 5px 5px 0 5px;
+	padding: 5px;
 }
 
 #editable {
-	margin: 5px auto;
+	margin: 5px auto 0 auto; /* offset padding of .panel-default */
 }
