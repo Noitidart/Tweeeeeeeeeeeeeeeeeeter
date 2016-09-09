@@ -1,5 +1,4 @@
 var gToolstates = {};
-/*
 var core;
 var gFsComm;
 var callInFramescript, callInMainworker, callInBootstrap;
@@ -12,11 +11,10 @@ function preinit() {
 	gFsComm = new Comm.client.content(init);
 }
 window.addEventListener('DOMContentLoaded', preinit, false);
-*/
 
-function editorInit() {
-	// callInBootstrap('fetchCore', undefined, aArg => {
-	// 	core = aArg.core;
+function init() {
+	callInBootstrap('fetchCore', undefined, aArg => {
+		core = aArg.core;
 
 		gTools = [
 			/*
@@ -211,7 +209,7 @@ function editorInit() {
 				name: 'Indent Less',
 				type: 'button',
 				icon: 'indent-right',
-				cmd: 'indent'
+				cmd: 'outdent'
 			},
 			{
 				state: {
@@ -400,7 +398,7 @@ function editorInit() {
 				icon: 'remove',
 				type: 'button',
 				func: function() {
-					alert('cancel and close it out');
+					callInBootstrap('destroyEditorInTab');
 				}
 			},
 			{
@@ -409,34 +407,11 @@ function editorInit() {
 				icon: 'ok',
 				type: 'button',
 				func: function() {
-					alert('generating image and sending to tweet');
-					var canvas = document.createElement('canvas');
-					var ctx = canvas.getContext('2d');
-
-					document.getElementById('editable').removeAttribute('contenteditable');
-					var xmlstr = new XMLSerializer().serializeToString(document.getElementById('svgthis'));
-					document.getElementById('editable').setAttribute('contenteditable', 'true');
-					console.log('xmlstr:', xmlstr)
-
-					var w = store.getState().toolstates.canvassize.w;
-					var h = store.getState().toolstates.canvassize.h;
-
-					canvas.width = w;
-					canvas.height = h;
-
-					var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '"><foreignObject width="100%" height="100%">' + xmlstr + '</foreignObject></svg>';
-
-					var img = new Image();
-					var svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-					var url = URL.createObjectURL(svg);
-
-					img.onload = function () {
-						ctx.drawImage(img, 0, 0);
-						URL.revokeObjectURL(url);
-						prompt('', canvas.toDataURL('image/png', ''));
-					}
-
-					img.src = url;
+					var editable = document.getElementById('editable');
+					editable.removeAttribute('contenteditable');
+					callInFramescript('drawWindow', {x:editable.offsetLeft,y:editable.offsetTop,width:editable.offsetWidth,height:editable.offsetHeight,attachimg:true}, function() {
+						editable.setAttribute('contenteditable', 'true');
+					});
 				}
 			}
 		];
@@ -533,23 +508,23 @@ function editorInit() {
 			// }
 		];
 
-		for (var sheet of stylesheets) {
-			var domel = document.createElement(sheet.el);
-			for (var p in sheet) {
-				if (p == 'el') continue;
-				domel.setAttribute(p, sheet[p]);
-			}
-			document.documentElement.appendChild(domel)
-		}
+		// for (var sheet of stylesheets) {
+		// 	var domel = document.createElement(sheet.el);
+		// 	for (var p in sheet) {
+		// 		if (p == 'el') continue;
+		// 		domel.setAttribute(p, sheet[p]);
+		// 	}
+		// 	document.documentElement.appendChild(domel)
+		// }
 
 		// render react
 		ReactDOM.render(
 			React.createElement(ReactRedux.Provider, { store },
 				React.createElement(App)
 			),
-			div
+			document.getElementById('root')
 		);
-	// });
+	});
 }
 
 var gTools;

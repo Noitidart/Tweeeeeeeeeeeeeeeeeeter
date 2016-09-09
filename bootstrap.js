@@ -4,6 +4,13 @@ Cu.import('resource://gre/modules/AddonManager.jsm');
 Cu.import('resource://gre/modules/osfile.jsm');
 Cu.import('resource://gre/modules/Services.jsm');
 
+const COMMONJS_URI = 'resource://gre/modules/commonjs';
+const { require } = Cu.import(COMMONJS_URI + '/toolkit/require.js', {});
+var CLIPBOARD = require('sdk/clipboard');
+
+function copyImg(dataurl) {
+	CLIPBOARD.set(dataurl, 'text');
+}
 // Lazy Imports
 
 // Globals
@@ -119,6 +126,20 @@ function shutdown(aData, aReason) {
 		delete gTempTimers[timerid];
 	}
 
+	var windows = Services.wm.getEnumerator('navigator:browser');
+	while (windows.hasMoreElements()) {
+		var window = windows.getNext();
+		var tabs = window.gBrowser.tabs;
+		for (var tab of tabs) {
+			var mystuff = tab.linkedBrowser.parentNode.querySelectorAll('.tweeeeeeeeeeeeeeeeeeter');
+			// console.error('mystuffmystuff:', mystuff);
+			if (mystuff) {
+				for (domel of mystuff) {
+					domel.parentNode.removeChild(domel);
+				}
+			}
+		}
+	}
     // // desktop_android:insert_gui
     // if (core.os.name != 'android') {
 	// 	CustomizableUI.destroyWidget('cui_' + core.addon.path.name);
@@ -204,9 +225,19 @@ function getAddonInfo(aAddonId=core.addon.id) {
 	return deferredmain_getaddoninfo.promise;
 }
 
-function showEditorInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
-	var deferred = new Deferred();
+function destroyEditorInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
+	aBrowser.parentNode.removeChild(aBrowser);
+}
+function attachImgInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
+	// aArg is aDataURL
+	var sendto = aBrowser.parentNode.querySelector('browser'); // the first browser element is the users content browser
+	console.log('sendto:', sendto, sendto.messageManager, sendto.messageManager.sendAsyncMessage);
+	aBrowser.parentNode.removeChild(aBrowser);
+	callInContentinframescript(sendto.messageManager, 'attachImg', aArg);
+}
 
+function showEditorInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
+	// aReportProgess is undefined as MainContentscript doesnt have a callback on this
 	console.log('aBrowser:', aBrowser.parentNode);
 	// aBrowser.contentWindow.alert('hi');
 
@@ -219,8 +250,6 @@ function showEditorInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser)
 	browser.setAttribute('class', 'tweeeeeeeeeeeeeeeeeeter');
 	aBrowser.parentNode.appendChild(browser);
 
-
-	deferred.resolve();
 }
 
 // start - common helper functions

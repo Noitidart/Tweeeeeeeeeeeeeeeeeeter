@@ -28,6 +28,9 @@ var MATCH_TWITTER = 2;
 const TWITTER_HOSTNAME = 'twitter.com';
 var gLastReloadDueToError = 0;
 
+const NS_HTML = 'http://www.w3.org/1999/xhtml';
+const NS_XUL = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
+
 // start - pageLoader
 var pageLoader = {
 	// start - devuser editable
@@ -73,12 +76,12 @@ var pageLoader = {
 						wantComponents: false
 					});
 					Services.scriptloader.loadSubScript(core.addon.path.scripts + 'comm/Comm.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-with-addons.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-dom.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/redux.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-redux.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-bootstrap.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					Services.scriptloader.loadSubScript(core.addon.path.scripts + 'editor.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-with-addons.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-dom.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/redux.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-redux.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-bootstrap.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + 'editor.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
 					Services.scriptloader.loadSubScript(core.addon.path.scripts + 'MainContentscript.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
 				break;
 		}
@@ -391,6 +394,29 @@ gCommScope.uninit = function() { // link4757484773732
 	// if (policy) policy.uninit();
 
 	removeEventListener('unload', shutdown, true);
+}
+
+gCommScope.drawWindow = function(aArg={}) {
+	var { x=0, y=0, width=0, height=0, attachimg=false } = aArg;
+	var doc = content.document;
+	var can = doc.createElementNS(NS_HTML, 'canvas');
+	var ctx = can.getContext('2d');
+
+	if (!width || !height) {
+		height = Math.max( doc.body.scrollHeight, doc.body.offsetHeight, doc.documentElement.clientHeight, doc.documentElement.scrollHeight, doc.documentElement.offsetHeight );
+		width = Math.max( doc.body.scrollWidth, doc.body.offsetWidth, doc.documentElement.clientWidth, doc.documentElement.scrollWidth, doc.documentElement.offsetWidth );
+	}
+	can.width = width;
+	can.height = height;
+	ctx.drawWindow(content, x, y, width, height, 'red', 0);
+	var dataurl = can.toDataURL('image/png', '');
+
+	if (attachimg) {
+		callInBootstrap('attachImgInTab', dataurl);
+	} else {
+		callInBootstrap('copyImg', dataurl);
+		console.error('ok copied');
+	}
 }
 
 // start - common helper functions
