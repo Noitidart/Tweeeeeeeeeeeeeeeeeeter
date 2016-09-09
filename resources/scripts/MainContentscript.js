@@ -112,6 +112,24 @@ function stopEvent(e) {
 }
 
 function onBtnClick(aTweetEditor) {
+	editorInit();
+	// callInBootstrap('showEditorInTab', undefined, (aArg={}) => {
+	// 	var { __PROGRESS } = aArg;
+	// 	if (__PROGRESS) {
+	// 		console.log('got progress');
+	// 	} else {
+	// 		console.log('done');
+	// 	}
+	// });
+	return;
+	var iframe = document.createElement('iframe');
+	iframe.setAttribute('style', 'width:100vw;height:100vh;background-color:transparent;position:fixed;top:0;left:0;z-index:999999999');
+	// iframe.src = 'chrome://tweeeeeeeeeeeeeeeeeeter/content/resources/pages/editor.html';
+	iframe.src = 'about:tweeter?editor';
+	iframe.classList.add('tweeeeeeeeeeeeeeeeeeter');
+	document.documentElement.appendChild(iframe);
+	alert('appeneded');
+	return;
 	var aMsg = window.prompt(formatStringFromNameCore('prompt-body', 'main'), formatStringFromNameCore('prompt-prefill', 'main'));
 	if (aMsg) {
 

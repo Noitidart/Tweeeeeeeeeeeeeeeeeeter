@@ -1,5 +1,5 @@
 // Imports
-var {interfaces: Ci, manager: Cm, results: Cr, utils:Cu} = Components;
+var {interfaces: Ci, manager: Cm, results: Cr, utils:Cu      , classes:Cc} = Components;
 Cm.QueryInterface(Ci.nsIComponentRegistrar);
 Cu.importGlobalProperties(['Blob', 'URL']);
 
@@ -73,6 +73,12 @@ var pageLoader = {
 						wantComponents: false
 					});
 					Services.scriptloader.loadSubScript(core.addon.path.scripts + 'comm/Comm.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-with-addons.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-dom.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/redux.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-redux.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-bootstrap.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					// Services.scriptloader.loadSubScript(core.addon.path.scripts + 'editor.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
 					Services.scriptloader.loadSubScript(core.addon.path.scripts + 'MainContentscript.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
 				break;
 		}
@@ -234,7 +240,9 @@ function aboutRedirectorizer(aURI) {
 	// console.log('nativeshot redirectorizer, core.addon.path:', core.addon.path);
 	var uripath_lower = aURI.path.toLowerCase();
 	if (uripath_lower == 'tweeter') {
-		return core.path.pages + 'app_options.xhtml';
+		return core.addon.path.pages + 'app_options.xhtml';
+	} else if (uripath_lower.includes('?editor')) {
+		return core.addon.path.pages + 'editor.html';
 	} else {
 		return 'data:text/plain,invalid tweeeeeeeeeeeeeeeeeeter page "' + uripath_lower + '"';
 	}
@@ -256,7 +264,7 @@ function init() {
 		// progressListener.register();
 		//
 		try {
-			// gAppAboutFactory = registerAbout('tweeter', 'tweeeeeeeeeeeeeeeeeeter options page', '{7fab6ff0-753f-11e6-bdf4-0800200c9a66}', aboutRedirectorizer);
+			gAppAboutFactory = registerAbout('tweeter', 'tweeeeeeeeeeeeeeeeeeter options page', '{a7230750-762f-11e6-bdf4-0800200c9a66}', aboutRedirectorizer);
 		} catch(ignore) {} // its non-e10s so it will throw saying already registered
 		// console.log('gAppAboutFactory:', gAppAboutFactory);
 
@@ -278,7 +286,76 @@ function init() {
 				break;
 		}
 	});
+
+	// policy =
+	// {
+	//   classDescription: "Test content policy",
+	//   classID: Components.ID("{12345678-1234-1234-1234-123456789abc}"),
+	//   contractID: "@adblockplus.org/test-policy;1",
+	//   xpcom_categories: ["content-policy"],
+	//
+	//   init: function()
+	//   {
+	//     let registrar = Components.manager.QueryInterface(Ci.nsIComponentRegistrar);
+	//     registrar.registerFactory(this.classID, this.classDescription, this.contractID, this);
+	//
+	//     let catMan = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
+	//     for each (let category in this.xpcom_categories)
+	//       catMan.addCategoryEntry(category, this.contractID, this.contractID, false, true);
+	//
+	//     this.uninit = function()
+	//     {
+	//       for each (let category in this.xpcom_categories)
+	//         catMan.deleteCategoryEntry(category, this.contractID, false);
+	//
+	//       // This needs to run asynchronously, see bug 753687
+	//       Services.tm.currentThread.dispatch(function()
+	//       {
+	//         registrar.unregisterFactory(this.classID, this);
+	//       }.bind(this), Ci.nsIEventTarget.DISPATCH_NORMAL);
+	//     };
+	//   },
+	//
+	//   // nsIContentPolicy interface implementation
+	//   shouldLoad: function(contentType, contentLocation, requestOrigin, node, mimeTypeGuess, extra)
+	//   {
+	//     console.log("shouldLoad: " + contentType + " " +
+	//                           (contentLocation ? contentLocation.spec : "null") + " " +
+	//                           (requestOrigin ? requestOrigin.spec : "null") + " " +
+	//                           node + " " +
+	//                           mimeTypeGuess + "\n");
+	//     return Ci.nsIContentPolicy.ACCEPT;
+	//   },
+	//
+	//   shouldProcess: function(contentType, contentLocation, requestOrigin, node, mimeTypeGuess, extra)
+	//   {
+	//     console.log("shouldProcess: " + contentType + " " +
+	//                             (contentLocation ? contentLocation.spec : "null") + " " +
+	//                             (requestOrigin ? requestOrigin.spec : "null") + " " +
+	//                             node + " " +
+	//                             mimeTypeGuess + "\n");
+	//     return Ci.nsIContentPolicy.ACCEPT;
+	//   },
+	//
+	//   // nsIFactory interface implementation
+	//   createInstance: function(outer, iid)
+	//   {
+	//     if (outer)
+	//       throw Cr.NS_ERROR_NO_AGGREGATION;
+	//     return this.QueryInterface(iid);
+	//   },
+	//
+	//   // nsISupports interface implementation
+	//   QueryInterface: XPCOMUtils.generateQI([Ci.nsIContentPolicy, Ci.nsIFactory])
+	// };
+	//
+	// try {
+	// 	policy.init();
+	// 	console.error('SUCCESFULLY REGISTERED POLICY');
+	// } catch(err) { console.error('policy failed to register:', err) }
 }
+
+// var policy;
 
 function shutdown(e) {
 	if (e.target == gMM) {
@@ -291,7 +368,6 @@ gCommScope.uninit = function() { // link4757484773732
 	// an issue with this unload is that framescripts are left over, i want to destory them eventually
 
 	console.error('DOING UNINIT');
-
 	pageLoader.unregister(); // pageLoader boilerpate
 	// progressListener.unregister();
 
@@ -311,6 +387,8 @@ gCommScope.uninit = function() { // link4757484773732
 	if (gAppAboutFactory) {
 		gAppAboutFactory.unregister();
 	}
+
+	// if (policy) policy.uninit();
 
 	removeEventListener('unload', shutdown, true);
 }

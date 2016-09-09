@@ -204,6 +204,25 @@ function getAddonInfo(aAddonId=core.addon.id) {
 	return deferredmain_getaddoninfo.promise;
 }
 
+function showEditorInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
+	var deferred = new Deferred();
+
+	console.log('aBrowser:', aBrowser.parentNode);
+	// aBrowser.contentWindow.alert('hi');
+
+	var doc = aBrowser.ownerDocument;
+	var browser = doc.createElementNS(NS_XUL, 'browser');
+	browser.setAttribute('type', 'content');
+	browser.setAttribute('remote', 'true');
+	browser.setAttribute('src', 'about:tweeter?editor');
+	// browser.setAttribute('src', core.addon.path.pages + 'editor.html');
+	browser.setAttribute('class', 'tweeeeeeeeeeeeeeeeeeter');
+	aBrowser.parentNode.appendChild(browser);
+
+
+	deferred.resolve();
+}
+
 // start - common helper functions
 function xhrSync(aUrl) {
 	// notes to amo reviewer - i only use this for local files

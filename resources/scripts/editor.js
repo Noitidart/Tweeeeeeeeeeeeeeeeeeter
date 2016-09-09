@@ -1,431 +1,561 @@
+var gToolstates = {};
+/*
+var core;
+var gFsComm;
+var callInFramescript, callInMainworker, callInBootstrap;
 // document.queryCommandValue('fontSize')
 // ""Helvetica Neue",Helvetica,Arial,sans-serif"
-var gToolstates = {};
 
-function init() {
-
-	gTools = [
-		/*
-		{
-			name: string - its identifier in the redux state
-			state: {
-				isdefault - set to true if multiple tools share same name
-				value: - default value, // if toggle is set to true, then if value is `typeof() == 'boolean'` then it is toggled to opposite, else it is toggled to null
-				name: - the name to refer to this in the state object (store) - if value is true/false then this acts like radio
-			}
-			value: - default value
-			group: null - undefined or something common. if not null, if any others match, they will be grouped
-			icon: string - glyphicon style
-			type: string;enum[button,menu]
-			toggle: bool/undefined - if should be `active` or not
-			queryCommandState - only for `toggle:true` on caret move in form, if should set to active or not based on this
-			queryCommandValue - same as above
-			queryFunc - same as above but it runs this func, you can do like `window.getSelection().focusNode` stuff or your own custom queryCommandValue like for font
-			menuitems: [ // only if `type:menu`
-				{
-					label - string
-					rel - string-React.createElement 1st arg if the menuitem should be wrapped
-					robj - object-React.creeatElement 2nd arg - only if `rel` is set
-					val - execCommand 3rd arg - only if `cmd` is set
-				}
-			]
-			cmd - execCommand 1st arg - only if `type:button`
-			val - execCommand 3rd arg - only if `type:button` and `cmd` is set IFFFF type is menu, then value is val in menuitem and thus this should not be set
-			func - alternative to execCommand. all func should end with execCommand.
-		}
-		*/
-		{
-			name: 'Style',
-			icon: 'menu-hamburger',
-			type: 'menu',
-			cmd: 'formatBlock',
-			menuitems: [
-				{
-					label: 'Code',
-					rel: 'pre',
-					val: 'pre'
-				},
-				{
-					label: 'Quote',
-					rel: 'blockquote',
-					val: 'blockquote'
-				},
-				{
-					label: 'Heading 1',
-					rel: 'h1',
-					val: 'h1'
-				},
-				{
-					label: 'Heading 2',
-					rel: 'h2',
-					val: 'h2'
-				},
-				{
-					label: 'Heading 3',
-					rel: 'h3',
-					val: 'h3'
-				},
-				{
-					label: 'Heading 4',
-					rel: 'h4',
-					val: 'h4'
-				},
-				{
-					label: 'Heading 5',
-					rel: 'h5',
-					val: 'h5'
-				},
-				{
-					label: 'Heading 6',
-					rel: 'h6',
-					val: 'h6'
-				},
-				{
-					label: 'Heading 7',
-					rel: 'h7',
-					val: 'h7'
-				}
-			]
-		},
-		{
-			name: 'Remove Formating',
-			type: 'button',
-			icon: 'erase',
-			cmd: 'removeFormat'
-		},
-		{
-			state: {
-				value: false,
-				name: 'bold'
-			},
-			group: 'BOLD',
-			name: 'Bold',
-			type: 'button',
-			icon: 'bold',
-			cmd: 'bold',
-			queryState: 'bold',
-			toggle: true
-		},
-		{
-			state: {
-				value: false,
-				name: 'italic'
-			},
-			group: 'BOLD',
-			name: 'Italic',
-			type: 'button',
-			icon: 'italic',
-			cmd: 'italic',
-			queryState: 'italic',
-			toggle: true
-		},
-		{
-			state: {
-				value: false,
-				name: 'underline'
-			},
-			group: 'BOLD',
-			name: 'Underline',
-			type: 'button',
-			icon: 'underline',
-			cmd: 'underline',
-			queryState: 'underline',
-			toggle: true
-		},
-		{
-			state: {
-				value: false,
-				name: 'strike'
-			},
-			group: 'BOLD',
-			name: 'Strike',
-			type: 'button',
-			icon: 'strikethrough',
-			cmd: 'strikeThrough',
-			queryState: 'strikeThrough',
-			toggle: true
-		},
-		{
-			state: {
-				value: 'sub',
-				name: 'subsup',
-			},
-			toggle: true,
-			group: 'BOLD',
-			name: 'Subscript',
-			type: 'button',
-			icon: 'subscript',
-			cmd: 'subscript',
-			queryState: 'subscript'
-		},
-		{
-			state: {
-				value: 'sup',
-				name: 'subsup'
-			},
-			toggle: true,
-			group: 'BOLD',
-			name: 'Superscript',
-			type: 'button',
-			icon: 'superscript',
-			cmd: 'superscript',
-			queryState: 'superscript'
-		},
-		{
-			group: 'LISTS',
-			name: 'Bulleted List',
-			type: 'button',
-			icon: 'list',
-			cmd: 'insertUnorderedList'
-		},
-		{
-			group: 'LISTS',
-			name: 'Numbered List',
-			type: 'button',
-			icon: 'list-alt',
-			cmd: 'insertOrderedList'
-		},
-		{
-			group: 'DENT',
-			name: 'Indent More',
-			type: 'button',
-			icon: 'indent-left',
-			cmd: 'indent'
-		},
-		{
-			group: 'DENT',
-			name: 'Indent Less',
-			type: 'button',
-			icon: 'indent-right',
-			cmd: 'indent'
-		},
-		{
-			state: {
-				value: 'left',
-				name: 'align',
-				isdefault: true
-			},
-			group: 'ALIGN',
-			name: 'Align Left',
-			type: 'button',
-			icon: 'align-left',
-			cmd: 'justifyLeft'
-		},
-		{
-			state: {
-				value: 'center',
-				name: 'align'
-			},
-			group: 'ALIGN',
-			name: 'Align Center',
-			type: 'button',
-			icon: 'align-center',
-			cmd: 'justifyCenter'
-		},
-		{
-			state: {
-				value: 'right',
-				name: 'align'
-			},
-			group: 'ALIGN',
-			name: 'Align Right',
-			type: 'button',
-			icon: 'align-right',
-			cmd: 'justifyRight'
-		},
-		{
-			state: {
-				value: 'justify',
-				name: 'align'
-			},
-			group: 'ALIGN',
-			name: 'Justify',
-			type: 'button',
-			icon: 'align-justify',
-			cmd: 'justifyFull'
-		},
-		{
-			state: {
-				name: 'fontfamily',
-				value: 'Arial' // link49282
-			},
-			group: 'FONT',
-			name: 'Font',
-			type: 'menu',
-			icon: 'font',
-			menuitems: [],
-			cmd: 'fontName'
-			// val not set as it is taken from menuitem
-		},
-		{
-			state: {
-				name: 'fontcolor',
-				value: '#000000'
-			},
-			group: 'FONT',
-			name: 'Font Color',
-			type: 'button',
-			icon: 'text-color',
-			func: function() {
-				alert('opening color palete, if user presses ok then execCommand that and set state.name `fontcolor` in `store`');
-			}
-		},
-		{
-			state: {
-				name: 'fontbackcolor',
-				value: '#000000'
-			},
-			group: 'FONT',
-			name: 'Font Backing Color',
-			type: 'button',
-			icon: 'text-background',
-			func: function() {
-				alert('opening color palete, if user presses ok then execCommand that and set state.name `fontbackcolor` in `store`');
-			}
-		},
-		{
-			state: {
-				name: 'fontsize',
-				value: 4 // link492821
-			},
-			group: 'FONT',
-			name: 'Font Size',
-			type: 'menu',
-			cmd: 'fontSize',
-			icon: 'text-size',
-			// val not set as it is taken from menuitem
-			menuitems: [
-				{
-					label: 'Tiny',
-					rel: 'font',
-					robj: { size:1 },
-					val: 1
-				},
-				{
-					label: 'Small',
-					rel: 'font',
-					robj: { size:2 },
-					val: 2
-				},
-				{
-					label: 'Samller',
-					rel: 'font',
-					robj: { size:3 },
-					val: 3
-				},
-				{
-					label: 'Normal',
-					rel: 'font',
-					robj: { size:4 },
-					val: 4
-				},
-				{
-					label: 'Large',
-					rel: 'font',
-					robj: { size:5 },
-					val: 5
-				},
-				{
-					label: 'Larger',
-					rel: 'font',
-					robj: { size:6 },
-					val: 6
-				},
-				{
-					label: 'Huge',
-					rel: 'font',
-					robj: { size:7 },
-					val: 7
-				}
-			]
-		},
-		{
-			name: 'Insert Image',
-			icon: 'picture',
-			type: 'button',
-			func: ()=>showModal('image')
-		},
-		{
-			state: {
-				name: 'canvascolor',
-				value: [255, 255, 255, 1] // rgba
-			},
-			group: 'CANVAS',
-			name: 'Background Color',
-			type: 'button',
-			icon: 'tint',
-			func: function() {
-				alert('show color palete')
-			}
-		},
-		{
-			state: {
-				name: 'canvassize',
-				value: {w:300,h:250}
-			},
-			group: 'CANVAS',
-			name: 'Resize',
-			type: 'button',
-			icon: 'fullscreen',
-			func: ()=>store.dispatch(showModal('canvassize'))
-		},
-		{
-			state: {
-				name: 'direction',
-				value: false
-			},
-			toggle: true,
-			group: 'CANVAS',
-			name: 'Right-to-Left',
-			type: 'button',
-			icon: 'sort'
-		}
-	];
-
-	// set default font size
-	// var fontsize_entry = gTools.find(el=>el.icon=='text-size'); // link492821
-	// document.execCommand('fontSize', fontsize_entry.state.value);
-
-	// populate `menuitems` field of the `font` entry
-	var fontname_entry = gTools.find(el=>el.icon=='font');
-	document.execCommand('fontName', false, fontname_entry.state.value); // set default font link49282
-	var fontname_menuitems = fontname_entry.menuitems;
-	for (var font of fonts) {
-		var fontname_menuitem = {
-			label: font,
-			rel: 'span',
-			robj: { style:{fontFamily:font} },
-			val: font
-		};
-		fontname_menuitems.push(fontname_menuitem);
-	}
-
-	// create default `gToolstates` entry for state
-	for (var toolentry of gTools) {
-		var { state } = toolentry;
-		if (state) {
-			if (!(state.name in gToolstates) || state.isdefault) {
-				gToolstates[state.name] = state.value;
-			}
-		}
-	}
-	//
-	app = Redux.combineReducers({
-		toolstates,
-		modal
-	});
-
-	store = Redux.createStore(app);
-
-	// render react
-	ReactDOM.render(
-		React.createElement(ReactRedux.Provider, { store },
-			React.createElement(App)
-		),
-		document.getElementById('root')
-	);
+function preinit() {
+	console.log('in iprenit');
+	({ callInFramescript, callInMainworker, callInBootstrap } = CommHelper.contentinframescript);
+	gFsComm = new Comm.client.content(init);
 }
-window.addEventListener('DOMContentLoaded', init, false);
+window.addEventListener('DOMContentLoaded', preinit, false);
+*/
+
+function editorInit() {
+
+	// callInBootstrap('fetchCore', undefined, aArg => {
+	// 	core = aArg.core;
+
+		gTools = [
+			/*
+			{
+				name: string - its identifier in the redux state
+				state: {
+					isdefault - set to true if multiple tools share same name
+					value: - default value, // if toggle is set to true, then if value is `typeof() == 'boolean'` then it is toggled to opposite, else it is toggled to null
+					name: - the name to refer to this in the state object (store) - if value is true/false then this acts like radio
+				}
+				value: - default value
+				group: null - undefined or something common. if not null, if any others match, they will be grouped
+				icon: string - glyphicon style
+				type: string;enum[button,menu]
+				toggle: bool/undefined - if should be `active` or not
+				queryCommandState - only for `toggle:true` on caret move in form, if should set to active or not based on this
+				queryCommandValue - same as above
+				queryFunc - same as above but it runs this func, you can do like `window.getSelection().focusNode` stuff or your own custom queryCommandValue like for font
+				menuitems: [ // only if `type:menu`
+					{
+						label - string
+						rel - string-React.createElement 1st arg if the menuitem should be wrapped
+						robj - object-React.creeatElement 2nd arg - only if `rel` is set
+						val - execCommand 3rd arg - only if `cmd` is set
+					}
+				]
+				cmd - execCommand 1st arg - only if `type:button`
+				val - execCommand 3rd arg - only if `type:button` and `cmd` is set IFFFF type is menu, then value is val in menuitem and thus this should not be set
+				func - alternative to execCommand. all func should end with execCommand.
+			}
+			*/
+			{
+				name: formatStringFromNameCore('style', 'main'),
+				icon: 'menu-hamburger',
+				type: 'menu',
+				cmd: 'formatBlock',
+				menuitems: [
+					{
+						label: formatStringFromNameCore('code', 'main'),
+						rel: 'pre',
+						val: 'pre'
+					},
+					{
+						label: formatStringFromNameCore('quote', 'main'),
+						rel: 'blockquote',
+						val: 'blockquote'
+					},
+					{
+						label: formatStringFromNameCore('headingX', 'main', [1]),
+						rel: 'h1',
+						val: 'h1'
+					},
+					{
+						label: formatStringFromNameCore('headingX', 'main', [2]),
+						rel: 'h2',
+						val: 'h2'
+					},
+					{
+						label: formatStringFromNameCore('headingX', 'main', [3]),
+						rel: 'h3',
+						val: 'h3'
+					},
+					{
+						label: formatStringFromNameCore('headingX', 'main', [4]),
+						rel: 'h4',
+						val: 'h4'
+					},
+					{
+						label: formatStringFromNameCore('headingX', 'main', [5]),
+						rel: 'h5',
+						val: 'h5'
+					},
+					{
+						label: formatStringFromNameCore('headingX', 'main', [6]),
+						rel: 'h6',
+						val: 'h6'
+					},
+					{
+						label: formatStringFromNameCore('headingX', 'main', [7]),
+						rel: 'h7',
+						val: 'h7'
+					}
+				]
+			},
+			{
+				name: 'Remove Formating',
+				type: 'button',
+				icon: 'erase',
+				cmd: 'removeFormat'
+			},
+			{
+				state: {
+					value: false,
+					name: 'bold'
+				},
+				group: 'BOLD',
+				name: 'Bold',
+				type: 'button',
+				icon: 'bold',
+				cmd: 'bold',
+				queryState: 'bold',
+				toggle: true
+			},
+			{
+				state: {
+					value: false,
+					name: 'italic'
+				},
+				group: 'BOLD',
+				name: 'Italic',
+				type: 'button',
+				icon: 'italic',
+				cmd: 'italic',
+				queryState: 'italic',
+				toggle: true
+			},
+			{
+				state: {
+					value: false,
+					name: 'underline'
+				},
+				group: 'BOLD',
+				name: 'Underline',
+				type: 'button',
+				icon: 'underline',
+				cmd: 'underline',
+				queryState: 'underline',
+				toggle: true
+			},
+			{
+				state: {
+					value: false,
+					name: 'strike'
+				},
+				group: 'BOLD',
+				name: 'Strike',
+				type: 'button',
+				icon: 'strikethrough',
+				cmd: 'strikeThrough',
+				queryState: 'strikeThrough',
+				toggle: true
+			},
+			{
+				state: {
+					value: 'sub',
+					name: 'subsup',
+				},
+				toggle: true,
+				group: 'BOLD',
+				name: 'Subscript',
+				type: 'button',
+				icon: 'subscript',
+				cmd: 'subscript',
+				queryState: 'subscript'
+			},
+			{
+				state: {
+					value: 'sup',
+					name: 'subsup'
+				},
+				toggle: true,
+				group: 'BOLD',
+				name: 'Superscript',
+				type: 'button',
+				icon: 'superscript',
+				cmd: 'superscript',
+				queryState: 'superscript'
+			},
+			{
+				group: 'LISTS',
+				name: 'Bulleted List',
+				type: 'button',
+				icon: 'list',
+				cmd: 'insertUnorderedList'
+			},
+			{
+				group: 'LISTS',
+				name: 'Numbered List',
+				type: 'button',
+				icon: 'list-alt',
+				cmd: 'insertOrderedList'
+			},
+			{
+				group: 'DENT',
+				name: 'Indent More',
+				type: 'button',
+				icon: 'indent-left',
+				cmd: 'indent'
+			},
+			{
+				group: 'DENT',
+				name: 'Indent Less',
+				type: 'button',
+				icon: 'indent-right',
+				cmd: 'indent'
+			},
+			{
+				state: {
+					value: 'left',
+					name: 'align',
+					isdefault: true
+				},
+				group: 'ALIGN',
+				name: 'Align Left',
+				type: 'button',
+				icon: 'align-left',
+				cmd: 'justifyLeft'
+			},
+			{
+				state: {
+					value: 'center',
+					name: 'align'
+				},
+				group: 'ALIGN',
+				name: 'Align Center',
+				type: 'button',
+				icon: 'align-center',
+				cmd: 'justifyCenter'
+			},
+			{
+				state: {
+					value: 'right',
+					name: 'align'
+				},
+				group: 'ALIGN',
+				name: 'Align Right',
+				type: 'button',
+				icon: 'align-right',
+				cmd: 'justifyRight'
+			},
+			{
+				state: {
+					value: 'justify',
+					name: 'align'
+				},
+				group: 'ALIGN',
+				name: 'Justify',
+				type: 'button',
+				icon: 'align-justify',
+				cmd: 'justifyFull'
+			},
+			{
+				state: {
+					name: 'fontfamily',
+					value: 'Arial' // link49282
+				},
+				group: 'FONT',
+				name: 'Font',
+				type: 'menu',
+				icon: 'font',
+				menuitems: [],
+				cmd: 'fontName'
+				// val not set as it is taken from menuitem
+			},
+			{
+				state: {
+					name: 'fontcolor',
+					value: '#000000'
+				},
+				group: 'FONT',
+				name: 'Font Color',
+				type: 'button',
+				icon: 'text-color',
+				func: function() {
+					alert('opening color palete, if user presses ok then execCommand that and set state.name `fontcolor` in `store`');
+				}
+			},
+			{
+				state: {
+					name: 'fontbackcolor',
+					value: '#000000'
+				},
+				group: 'FONT',
+				name: 'Font Backing Color',
+				type: 'button',
+				icon: 'text-background',
+				func: function() {
+					alert('opening color palete, if user presses ok then execCommand that and set state.name `fontbackcolor` in `store`');
+				}
+			},
+			{
+				state: {
+					name: 'fontsize',
+					value: 4 // link492821
+				},
+				group: 'FONT',
+				name: 'Font Size',
+				type: 'menu',
+				cmd: 'fontSize',
+				icon: 'text-size',
+				// val not set as it is taken from menuitem
+				menuitems: [
+					{
+						label: 'Tiny',
+						rel: 'font',
+						robj: { size:1 },
+						val: 1
+					},
+					{
+						label: 'Small',
+						rel: 'font',
+						robj: { size:2 },
+						val: 2
+					},
+					{
+						label: 'Samller',
+						rel: 'font',
+						robj: { size:3 },
+						val: 3
+					},
+					{
+						label: 'Normal',
+						rel: 'font',
+						robj: { size:4 },
+						val: 4
+					},
+					{
+						label: 'Large',
+						rel: 'font',
+						robj: { size:5 },
+						val: 5
+					},
+					{
+						label: 'Larger',
+						rel: 'font',
+						robj: { size:6 },
+						val: 6
+					},
+					{
+						label: 'Huge',
+						rel: 'font',
+						robj: { size:7 },
+						val: 7
+					}
+				]
+			},
+			{
+				name: 'Insert Image',
+				icon: 'picture',
+				type: 'button',
+				func: ()=>showModal('image')
+			},
+			{
+				state: {
+					name: 'canvascolor',
+					value: [255, 255, 255, 1] // rgba
+				},
+				group: 'CANVAS',
+				name: 'Background Color',
+				type: 'button',
+				icon: 'tint',
+				func: function() {
+					alert('show color palete')
+				}
+			},
+			{
+				state: {
+					name: 'canvassize',
+					value: {w:300,h:250}
+				},
+				group: 'CANVAS',
+				name: 'Resize',
+				type: 'button',
+				icon: 'fullscreen',
+				func: ()=>store.dispatch(showModal('canvassize'))
+			},
+			{
+				state: {
+					name: 'direction',
+					value: false
+				},
+				toggle: true,
+				group: 'CANVAS',
+				name: 'Right-to-Left',
+				type: 'button',
+				icon: 'sort'
+			},
+			{
+				group: 'IFRAME',
+				name: 'Cancel & Close',
+				icon: 'remove',
+				type: 'button',
+				func: function() {
+					alert('cancel and close it out');
+				}
+			},
+			{
+				group: 'IFRAME',
+				name: 'Attach to Tweet',
+				icon: 'ok',
+				type: 'button',
+				func: function() {
+					alert('generating image and sending to tweet');
+					var canvas = document.createElement('canvas');
+					var ctx = canvas.getContext('2d');
+
+					document.getElementById('editable').removeAttribute('contenteditable');
+					var xmlstr = new XMLSerializer().serializeToString(document.getElementById('svgthis'));
+					document.getElementById('editable').setAttribute('contenteditable', 'true');
+					console.log('xmlstr:', xmlstr)
+
+					var w = store.getState().toolstates.canvassize.w;
+					var h = store.getState().toolstates.canvassize.h;
+
+					canvas.width = w;
+					canvas.height = h;
+
+					var data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '"><foreignObject width="100%" height="100%">' + xmlstr + '</foreignObject></svg>';
+
+					var img = new Image();
+					var svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+					var url = URL.createObjectURL(svg);
+
+					img.onload = function () {
+						ctx.drawImage(img, 0, 0);
+						URL.revokeObjectURL(url);
+						prompt('', canvas.toDataURL('image/png', ''));
+					}
+
+					img.src = url;
+				}
+			}
+		];
+
+		// set default font size
+		// var fontsize_entry = gTools.find(el=>el.icon=='text-size'); // link492821
+		// document.execCommand('fontSize', fontsize_entry.state.value);
+
+		// populate `menuitems` field of the `font` entry
+		var fontname_entry = gTools.find(el=>el.icon=='font');
+		document.execCommand('fontName', false, fontname_entry.state.value); // set default font link49282
+		var fontname_menuitems = fontname_entry.menuitems;
+		for (var font of fonts) {
+			var fontname_menuitem = {
+				label: font,
+				rel: 'span',
+				robj: { style:{fontFamily:font} },
+				val: font
+			};
+			fontname_menuitems.push(fontname_menuitem);
+		}
+
+		// create default `gToolstates` entry for state
+		for (var toolentry of gTools) {
+			var { state } = toolentry;
+			if (state) {
+				if (!(state.name in gToolstates) || state.isdefault) {
+					gToolstates[state.name] = state.value;
+				}
+			}
+		}
+		//
+		app = Redux.combineReducers({
+			toolstates,
+			modal
+		});
+
+		store = Redux.createStore(app);
+
+		var div = document.createElement('div');
+		var shadow = div.createShadowRoot();
+		div.setAttribute('style', 'position:fixed;top:0;left:0;height:100vh;width;100vw;z-index:99999;');
+		div.setAttribute('class', 'tweeeeeeeeeeeeeeeeeeter');
+		document.documentElement.appendChild(div);
+
+		var stylesheets = [
+			{
+				el: 'link',
+				rel: 'stylesheet',
+				type: 'text/css',
+				media: 'screen',
+				class: 'tweeeeeeeeeeeeeeeeeeter',
+				href: core.addon.path.styles + 'fonts.css'
+			},
+			{
+				el: 'link',
+				rel: 'stylesheet',
+				type: 'text/css',
+				media: 'screen',
+				class: 'tweeeeeeeeeeeeeeeeeeter',
+				href: core.addon.path.styles + 'bootstrap.css'
+			},
+			{
+				el: 'link',
+				rel: 'stylesheet',
+				type: 'text/css',
+				media: 'screen',
+				class: 'tweeeeeeeeeeeeeeeeeeter',
+				href: core.addon.path.styles + 'editor.css'
+			},
+			/////////////////////// scripts
+			{
+				el: 'script',
+				src: core.addon.path.scripts + '3rd/react-with-addons.js'
+			},
+			{
+				el: 'script',
+				src: core.addon.path.scripts + '3rd/react-dom.js'
+			},
+			{
+				el: 'script',
+				src: core.addon.path.scripts + '3rd/redux.js'
+			},
+			{
+				el: 'script',
+				src: core.addon.path.scripts + '3rd/react-redux.js'
+			},
+			{
+				el: 'script',
+				src: core.addon.path.scripts + '3rd/react-bootstrap.js'
+			},
+			{
+				el: 'script',
+				src: core.addon.path.scripts + '3rd/editor.js'
+			}
+		];
+
+		for (var sheet of stylesheets) {
+			var domel = document.createElement(sheet.el);
+			for (var p in sheet) {
+				if (p == 'el') continue;
+				domel.setAttribute(p, sheet[p]);
+			}
+			shadow.appendChild(domel)
+		}
+
+		var reactroot = document.createElement('div');
+		shadow.appendChild(reactroot);
+
+		// render react
+		ReactDOM.render(
+			React.createElement(ReactRedux.Provider, { store },
+				React.createElement(App)
+			),
+			reactroot
+		);
+	// });
+}
 
 var gTools;
 // STORE
@@ -463,7 +593,8 @@ var Editable = React.createClass({
 			height: toolstates.canvassize.h + 'px',
 			width: toolstates.canvassize.w + 'px',
 			backgroundColor: 'rgba(' + toolstates.canvascolor.join(',') + ')',
-			direction: !toolstates.direction ? 'ltr' : 'rtl'
+			direction: !toolstates.direction ? 'ltr' : 'rtl',
+			padding: '5px'
 		};
 
 		var fontsize_entry = gTools.find(el=>el.icon=='text-size'); // link492821
@@ -473,9 +604,11 @@ var Editable = React.createClass({
 		// 	'rawr'
 		// );
 
-		return React.createElement('font', { size:fontsize_entry.state.value },
-			React.createElement('div', { id:'editable', contentEditable:true, style:editable_style },
-				'rawr'
+		return React.createElement('span', { id:'svgthis' },
+			React.createElement('font', { size:fontsize_entry.state.value },
+				React.createElement('div', { id:'editable', contentEditable:true, style:editable_style },
+					'rawr'
+				)
 			)
 		);
 	}
@@ -526,7 +659,7 @@ var Tools = React.createClass({
 			}
 		}
 
-		console.log('tool_rels:', tool_rels);
+		// console.log('tool_rels:', tool_rels);
 
 		return React.createElement(ReactBootstrap.ButtonToolbar, undefined,
 			tool_rels
@@ -827,3 +960,22 @@ function modal(state=null, action) {
 			return state;
 	}
 }
+// start - common helper functions
+function formatStringFromNameCore(aLocalizableStr, aLoalizedKeyInCoreAddonL10n, aReplacements) {
+	// 051916 update - made it core.addon.l10n based
+    // formatStringFromNameCore is formating only version of the worker version of formatStringFromName, it is based on core.addon.l10n cache
+
+	try { var cLocalizedStr = core.addon.l10n[aLoalizedKeyInCoreAddonL10n][aLocalizableStr]; if (!cLocalizedStr) { throw new Error('localized is undefined'); } } catch (ex) { console.error('formatStringFromNameCore error:', ex, 'args:', aLocalizableStr, aLoalizedKeyInCoreAddonL10n, aReplacements); } // remove on production
+
+	var cLocalizedStr = core.addon.l10n[aLoalizedKeyInCoreAddonL10n][aLocalizableStr];
+	// console.log('cLocalizedStr:', cLocalizedStr, 'args:', aLocalizableStr, aLoalizedKeyInCoreAddonL10n, aReplacements);
+    if (aReplacements) {
+        for (var i=0; i<aReplacements.length; i++) {
+            cLocalizedStr = cLocalizedStr.replace('%S', aReplacements[i]);
+        }
+    }
+
+    return cLocalizedStr;
+}
+
+editorInit();
