@@ -355,7 +355,7 @@ function init() {
 				name: 'Insert Image',
 				icon: 'picture',
 				type: 'button',
-				func: ()=>showModal('image')
+				func: ()=>store.dispatch(showModal('image'))
 			},
 			{
 				state: {
@@ -646,6 +646,8 @@ var TextToolButton = React.createClass({
 			document.execCommand(cmd, false, val || null);
 		} else if (func) {
 			func();
+		} else if (toolentry.toggle) {
+			store.dispatch(toggleTool(toolentry.state.name))
 		}
 
 		document.getElementById('editable').focus();
@@ -729,34 +731,51 @@ var Modals = React.createClass({
 		// determine `contents` based on name
 		var contents;
 		switch(this.showing_for_name) {
+			case 'image':
+					contents = [
+						React.createElement(ReactBootstrap.Modal.Header, { closeButton:true },
+							React.createElement(ReactBootstrap.Modal.Title, undefined,
+								formatStringFromNameCore('imagemodal_title', 'main')
+							)
+						),
+						React.createElement(ReactBootstrap.Modal.Body, undefined,
+							formatStringFromNameCore('imagemodal_body', 'main')
+						),
+						React.createElement(ReactBootstrap.Modal.Footer, undefined,
+							React.createElement(ReactBootstrap.Button, { onClick:doClose },
+								formatStringFromNameCore('ok', 'main')
+							)
+						)
+					];
+				break;
 			case 'canvassize':
 					var { canvassize={h:1,w:2} } = this.props; // mapped state ex
 					contents = [
 						React.createElement(ReactBootstrap.Modal.Header, { closeButton:true },
 							React.createElement(ReactBootstrap.Modal.Title, undefined,
-								'Resize Canvas'
+								formatStringFromNameCore('resizecanvas', 'main')
 							)
 						),
 						React.createElement(ReactBootstrap.Modal.Body, undefined,
 							React.createElement(ReactBootstrap.Form, { inline:true },
 								React.createElement(ReactBootstrap.ControlLabel, undefined,
-									'Width:'
+									formatStringFromNameCore('width', 'main')
 								),
 								React.createElement(ReactBootstrap.FormControl, { type:'text', ref:'width', defaultValue:canvassize.w })
 							),
 							React.createElement(ReactBootstrap.Form, { inline:true },
 								React.createElement(ReactBootstrap.ControlLabel, undefined,
-									'Height:'
+									formatStringFromNameCore('height', 'main')
 								),
 								React.createElement(ReactBootstrap.FormControl, { type:'text', ref:'height', defaultValue:canvassize.h })
 							)
 						),
 						React.createElement(ReactBootstrap.Modal.Footer, undefined,
 							React.createElement(ReactBootstrap.Button, { onClick:doClose },
-								'Cancel'
+								formatStringFromNameCore('cancel', 'main')
 							),
 							React.createElement(ReactBootstrap.Button, { onClick:this.doApply, bsStyle:'primary' },
-								'Apply'
+								formatStringFromNameCore('apply', 'main')
 							)
 						)
 					];
@@ -897,7 +916,7 @@ function toolstates(state=gToolstates, action) {
 		case SET_TOOL_VALUES:
 			return Object.assign({}, state, action.obj);
 		case TOGGLE_TOOL:
-			var toolentry = gTools.find(el=>el.state.name == action.tool);
+			var toolentry = gTools.find(el=>el.state && el.state.name == action.tool);
 			var newstate;
 			if (typeof(toolentry.state.value) == 'boolean') {
 				newstate = !state[action.tool];
