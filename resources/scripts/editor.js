@@ -100,7 +100,7 @@ function init() {
 				]
 			},
 			{
-				name: 'Remove Formating',
+				name: formatStringFromNameCore('removeformat', 'main'),
 				type: 'button',
 				icon: 'erase',
 				cmd: 'removeFormat'
@@ -111,7 +111,7 @@ function init() {
 					name: 'bold'
 				},
 				group: 'BOLD',
-				name: 'Bold',
+				name: formatStringFromNameCore('bold', 'main'),
 				type: 'button',
 				icon: 'bold',
 				cmd: 'bold',
@@ -124,7 +124,7 @@ function init() {
 					name: 'italic'
 				},
 				group: 'BOLD',
-				name: 'Italic',
+				name: formatStringFromNameCore('italic', 'main'),
 				type: 'button',
 				icon: 'italic',
 				cmd: 'italic',
@@ -137,7 +137,7 @@ function init() {
 					name: 'underline'
 				},
 				group: 'BOLD',
-				name: 'Underline',
+				name: formatStringFromNameCore('underline', 'main'),
 				type: 'button',
 				icon: 'underline',
 				cmd: 'underline',
@@ -150,7 +150,7 @@ function init() {
 					name: 'strike'
 				},
 				group: 'BOLD',
-				name: 'Strike',
+				name: formatStringFromNameCore('strike', 'main'),
 				type: 'button',
 				icon: 'strikethrough',
 				cmd: 'strikeThrough',
@@ -164,7 +164,7 @@ function init() {
 				},
 				toggle: true,
 				group: 'BOLD',
-				name: 'Subscript',
+				name: formatStringFromNameCore('subscript', 'main'),
 				type: 'button',
 				icon: 'subscript',
 				cmd: 'subscript',
@@ -177,7 +177,7 @@ function init() {
 				},
 				toggle: true,
 				group: 'BOLD',
-				name: 'Superscript',
+				name: formatStringFromNameCore('superscript', 'main'),
 				type: 'button',
 				icon: 'superscript',
 				cmd: 'superscript',
@@ -185,28 +185,28 @@ function init() {
 			},
 			{
 				group: 'LISTS',
-				name: 'Bulleted List',
+				name: formatStringFromNameCore('listbullet', 'main'),
 				type: 'button',
 				icon: 'list',
 				cmd: 'insertUnorderedList'
 			},
 			{
 				group: 'LISTS',
-				name: 'Numbered List',
+				name: formatStringFromNameCore('listnumber', 'main'),
 				type: 'button',
 				icon: 'list-alt',
 				cmd: 'insertOrderedList'
 			},
 			{
 				group: 'DENT',
-				name: 'Indent More',
+				name: formatStringFromNameCore('indent', 'main'),
 				type: 'button',
 				icon: 'indent-left',
 				cmd: 'indent'
 			},
 			{
 				group: 'DENT',
-				name: 'Indent Less',
+				name: formatStringFromNameCore('indentless', 'main'),
 				type: 'button',
 				icon: 'indent-right',
 				cmd: 'outdent'
@@ -218,7 +218,7 @@ function init() {
 					isdefault: true
 				},
 				group: 'ALIGN',
-				name: 'Align Left',
+				name: formatStringFromNameCore('alignleft', 'main'),
 				type: 'button',
 				icon: 'align-left',
 				cmd: 'justifyLeft'
@@ -229,7 +229,7 @@ function init() {
 					name: 'align'
 				},
 				group: 'ALIGN',
-				name: 'Align Center',
+				name: formatStringFromNameCore('aligncenter', 'main'),
 				type: 'button',
 				icon: 'align-center',
 				cmd: 'justifyCenter'
@@ -240,7 +240,7 @@ function init() {
 					name: 'align'
 				},
 				group: 'ALIGN',
-				name: 'Align Right',
+				name: formatStringFromNameCore('alignright', 'main'),
 				type: 'button',
 				icon: 'align-right',
 				cmd: 'justifyRight'
@@ -251,7 +251,7 @@ function init() {
 					name: 'align'
 				},
 				group: 'ALIGN',
-				name: 'Justify',
+				name: formatStringFromNameCore('alignjustify', 'main'),
 				type: 'button',
 				icon: 'align-justify',
 				cmd: 'justifyFull'
@@ -262,7 +262,7 @@ function init() {
 					value: 'Arial' // link49282
 				},
 				group: 'FONT',
-				name: 'Font',
+				name: formatStringFromNameCore('font', 'main'),
 				type: 'menu',
 				icon: 'font',
 				menuitems: [],
@@ -275,7 +275,7 @@ function init() {
 					value: '#000000'
 				},
 				group: 'FONT',
-				name: 'Font Color',
+				name: formatStringFromNameCore('fontcolor', 'main'),
 				type: 'button',
 				icon: 'text-color',
 				func: function() {
@@ -288,7 +288,7 @@ function init() {
 					value: '#000000'
 				},
 				group: 'FONT',
-				name: 'Font Backing Color',
+				name: formatStringFromNameCore('fontbackcolor', 'main'),
 				type: 'button',
 				icon: 'text-background',
 				func: function() {
@@ -301,50 +301,50 @@ function init() {
 					value: 4 // link492821
 				},
 				group: 'FONT',
-				name: 'Font Size',
+				name: formatStringFromNameCore('fontsize', 'main'),
 				type: 'menu',
 				cmd: 'fontSize',
 				icon: 'text-size',
 				// val not set as it is taken from menuitem
 				menuitems: [
 					{
-						label: 'Tiny',
+						label: formatStringFromNameCore('tiny', 'main'),
 						rel: 'font',
 						robj: { size:1 },
 						val: 1
 					},
 					{
-						label: 'Small',
+						label: formatStringFromNameCore('small', 'main'),
 						rel: 'font',
 						robj: { size:2 },
 						val: 2
 					},
 					{
-						label: 'Samller',
+						label: formatStringFromNameCore('smaller', 'main'),
 						rel: 'font',
 						robj: { size:3 },
 						val: 3
 					},
 					{
-						label: 'Normal',
+						label: formatStringFromNameCore('normal', 'main'),
 						rel: 'font',
 						robj: { size:4 },
 						val: 4
 					},
 					{
-						label: 'Large',
+						label: formatStringFromNameCore('large', 'main'),
 						rel: 'font',
 						robj: { size:5 },
 						val: 5
 					},
 					{
-						label: 'Larger',
+						label: formatStringFromNameCore('larger', 'main'),
 						rel: 'font',
 						robj: { size:6 },
 						val: 6
 					},
 					{
-						label: 'Huge',
+						label: formatStringFromNameCore('huge', 'main'),
 						rel: 'font',
 						robj: { size:7 },
 						val: 7
@@ -352,7 +352,7 @@ function init() {
 				]
 			},
 			{
-				name: 'Insert Image',
+				name: formatStringFromNameCore('insertimage', 'main'),
 				icon: 'picture',
 				type: 'button',
 				func: ()=>store.dispatch(showModal('image'))
@@ -363,7 +363,7 @@ function init() {
 					value: [255, 255, 255, 1] // rgba
 				},
 				group: 'CANVAS',
-				name: 'Background Color',
+				name: formatStringFromNameCore('canvascolor', 'main'),
 				type: 'button',
 				icon: 'tint',
 				func: function() {
@@ -376,7 +376,7 @@ function init() {
 					value: {w:300,h:250}
 				},
 				group: 'CANVAS',
-				name: 'Resize',
+				name: formatStringFromNameCore('resize', 'main'),
 				type: 'button',
 				icon: 'fullscreen',
 				func: ()=>store.dispatch(showModal('canvassize'))
@@ -388,13 +388,13 @@ function init() {
 				},
 				toggle: true,
 				group: 'CANVAS',
-				name: 'Right-to-Left',
+				name: formatStringFromNameCore('righttoleft', 'main'),
 				type: 'button',
 				icon: 'sort'
 			},
 			{
 				group: 'IFRAME',
-				name: 'Cancel & Close',
+				name: formatStringFromNameCore('cancelandclose', 'main'),
 				icon: 'remove',
 				type: 'button',
 				func: function() {
@@ -403,7 +403,7 @@ function init() {
 			},
 			{
 				group: 'IFRAME',
-				name: 'Attach to Tweet',
+				name: formatStringFromNameCore('attachtweet', 'main'),
 				icon: 'ok',
 				type: 'button',
 				func: function() {
