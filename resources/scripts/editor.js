@@ -15,7 +15,6 @@ window.addEventListener('DOMContentLoaded', preinit, false);
 */
 
 function editorInit() {
-
 	// callInBootstrap('fetchCore', undefined, aArg => {
 	// 	core = aArg.core;
 
@@ -478,7 +477,6 @@ function editorInit() {
 		store = Redux.createStore(app);
 
 		var div = document.createElement('div');
-		var shadow = div.createShadowRoot();
 		div.setAttribute('style', 'position:fixed;top:0;left:0;height:100vh;width;100vw;z-index:99999;');
 		div.setAttribute('class', 'tweeeeeeeeeeeeeeeeeeter');
 		document.documentElement.appendChild(div);
@@ -507,32 +505,32 @@ function editorInit() {
 				media: 'screen',
 				class: 'tweeeeeeeeeeeeeeeeeeter',
 				href: core.addon.path.styles + 'editor.css'
-			},
-			/////////////////////// scripts
-			{
-				el: 'script',
-				src: core.addon.path.scripts + '3rd/react-with-addons.js'
-			},
-			{
-				el: 'script',
-				src: core.addon.path.scripts + '3rd/react-dom.js'
-			},
-			{
-				el: 'script',
-				src: core.addon.path.scripts + '3rd/redux.js'
-			},
-			{
-				el: 'script',
-				src: core.addon.path.scripts + '3rd/react-redux.js'
-			},
-			{
-				el: 'script',
-				src: core.addon.path.scripts + '3rd/react-bootstrap.js'
-			},
-			{
-				el: 'script',
-				src: core.addon.path.scripts + '3rd/editor.js'
 			}
+			/////////////////////// scripts
+			// {
+			// 	el: 'script',
+			// 	src: core.addon.path.scripts + '3rd/react-with-addons.js'
+			// },
+			// {
+			// 	el: 'script',
+			// 	src: core.addon.path.scripts + '3rd/react-dom.js'
+			// },
+			// {
+			// 	el: 'script',
+			// 	src: core.addon.path.scripts + '3rd/redux.js'
+			// },
+			// {
+			// 	el: 'script',
+			// 	src: core.addon.path.scripts + '3rd/react-redux.js'
+			// },
+			// {
+			// 	el: 'script',
+			// 	src: core.addon.path.scripts + '3rd/react-bootstrap.js'
+			// },
+			// {
+			// 	el: 'script',
+			// 	src: core.addon.path.scripts + '3rd/editor.js'
+			// }
 		];
 
 		for (var sheet of stylesheets) {
@@ -541,18 +539,15 @@ function editorInit() {
 				if (p == 'el') continue;
 				domel.setAttribute(p, sheet[p]);
 			}
-			shadow.appendChild(domel)
+			document.documentElement.appendChild(domel)
 		}
-
-		var reactroot = document.createElement('div');
-		shadow.appendChild(reactroot);
 
 		// render react
 		ReactDOM.render(
 			React.createElement(ReactRedux.Provider, { store },
 				React.createElement(App)
 			),
-			reactroot
+			div
 		);
 	// });
 }
@@ -977,5 +972,3 @@ function formatStringFromNameCore(aLocalizableStr, aLoalizedKeyInCoreAddonL10n, 
 
     return cLocalizedStr;
 }
-
-editorInit();

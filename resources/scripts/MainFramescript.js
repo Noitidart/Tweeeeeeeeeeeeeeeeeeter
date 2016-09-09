@@ -73,12 +73,12 @@ var pageLoader = {
 						wantComponents: false
 					});
 					Services.scriptloader.loadSubScript(core.addon.path.scripts + 'comm/Comm.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-with-addons.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-dom.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/redux.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-redux.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					// Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-bootstrap.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
-					// Services.scriptloader.loadSubScript(core.addon.path.scripts + 'editor.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-with-addons.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-dom.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/redux.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-redux.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					Services.scriptloader.loadSubScript(core.addon.path.scripts + '3rd/react-bootstrap.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
+					Services.scriptloader.loadSubScript(core.addon.path.scripts + 'editor.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
 					Services.scriptloader.loadSubScript(core.addon.path.scripts + 'MainContentscript.js?' + core.addon.cache_key, gSandbox, 'UTF-8');
 				break;
 		}
