@@ -117,8 +117,9 @@ function onBtnClick(aTweetEditor) {
 	// callInFramescript('drawWindow');
 	// return;
 	attachImg = function(aDataURL) {
-		var attachImg = document.createElement('img');
-		aTweetEditor.appendChild(attachImg);
+		var img = document.createElement('img');
+		img.setAttribute('src', aDataURL);
+		aTweetEditor.appendChild(img);
 		aTweetEditor.focus();
 	};
 	callInBootstrap('showEditorInTab');

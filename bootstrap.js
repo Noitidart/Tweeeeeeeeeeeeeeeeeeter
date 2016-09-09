@@ -233,7 +233,7 @@ function attachImgInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) 
 	var sendto = aBrowser.parentNode.querySelector('browser'); // the first browser element is the users content browser
 	console.log('sendto:', sendto, sendto.messageManager, sendto.messageManager.sendAsyncMessage);
 	aBrowser.parentNode.removeChild(aBrowser);
-	callInContentinframescript(sendto.messageManager, 'attachImg', aArg);
+	callInContentinframescript('attachImg', aArg, undefined, sendto.messageManager);
 }
 
 function showEditorInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
