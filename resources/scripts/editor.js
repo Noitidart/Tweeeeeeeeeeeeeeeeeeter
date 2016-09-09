@@ -28,7 +28,7 @@ function init() {
 				value: - default value
 				group: null - undefined or something common. if not null, if any others match, they will be grouped
 				icon: string - glyphicon style
-				type: string;enum[button,menu]
+				type: string;enum[button,menu] OR react element - if react element then no `func`/`cmd`/`val` applies
 				toggle: bool/undefined - if should be `active` or not
 				queryCommandState - only for `toggle:true` on caret move in form, if should set to active or not based on this
 				queryCommandValue - same as above
@@ -276,11 +276,8 @@ function init() {
 				},
 				group: 'FONT',
 				name: formatStringFromNameCore('fontcolor', 'main'),
-				type: 'button',
-				icon: 'text-color',
-				func: function() {
-					alert('opening color palete, if user presses ok then execCommand that and set state.name `fontcolor` in `store`');
-				}
+				type: TextToolColorPicker,
+				icon: 'text-color'
 			},
 			{
 				state: {
@@ -289,11 +286,8 @@ function init() {
 				},
 				group: 'FONT',
 				name: formatStringFromNameCore('fontbackcolor', 'main'),
-				type: 'button',
-				icon: 'text-background',
-				func: function() {
-					alert('opening color palete, if user presses ok then execCommand that and set state.name `fontbackcolor` in `store`');
-				}
+				type: TextToolColorPicker,
+				icon: 'text-background'
 			},
 			{
 				state: {
@@ -360,15 +354,12 @@ function init() {
 			{
 				state: {
 					name: 'canvascolor',
-					value: [255, 255, 255, 1] // rgba
+					value: '#FFFFFF' //[255, 255, 255, 1] // rgba
 				},
 				group: 'CANVAS',
 				name: formatStringFromNameCore('canvascolor', 'main'),
-				type: 'button',
-				icon: 'tint',
-				func: function() {
-					alert('show color palete')
-				}
+				type: TextToolColorPicker,
+				icon: 'tint'
 			},
 			{
 				state: {
@@ -416,6 +407,7 @@ function init() {
 			}
 		];
 
+		document.execCommand('styleWithCSS', false, null);
 		// set default font size
 		// var fontsize_entry = gTools.find(el=>el.icon=='text-size'); // link492821
 		// document.execCommand('fontSize', fontsize_entry.state.value);
@@ -562,9 +554,9 @@ var Editable = React.createClass({
 		var editable_style = {
 			height: toolstates.canvassize.h + 'px',
 			width: toolstates.canvassize.w + 'px',
-			backgroundColor: 'rgba(' + toolstates.canvascolor.join(',') + ')',
+			backgroundColor: toolstates.canvascolor, // 'rgba(' + toolstates.canvascolor.join(',') + ')',
 			direction: !toolstates.direction ? 'ltr' : 'rtl',
-			padding: '5px'
+			padding: '5px',
 		};
 
 		var fontsize_entry = gTools.find(el=>el.icon=='text-size'); // link492821
@@ -618,6 +610,11 @@ var Tools = React.createClass({
 							React.createElement(TextToolMenu, { toolentry, toolstates })
 						);
 					break;
+				default:
+					// assume it is a react element
+					pushtarget.push(
+						React.createElement(toolentry.type, { toolentry, toolstates })
+					);
 			}
 		}
 
@@ -678,7 +675,7 @@ var TextToolMenu = React.createClass({
 					React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
 				),
 				React.createElement(ReactBootstrap.Dropdown.Menu, undefined,
-					toolentry.menuitems.map( (el, i) => React.createElement(TextToolMenuItem, { toolentry, menuitem_entry:el, eventKey:i }))
+					toolentry.menuitems.map( (el, i) => React.createElement(TextToolMenuItem, { toolentry, menuitem_entry:el, eventKey:''+i }))
 				)
 			)
 		);
@@ -703,6 +700,67 @@ var TextToolMenuItem = React.createClass({
 		return React.createElement(ReactBootstrap.MenuItem, { eventKey, onClick:this.onClick },
 			!menuitem_entry.rel ? menuitem_entry.label : React.createElement(menuitem_entry.rel, menuitem_entry.robj, menuitem_entry.label)
 		)
+	}
+});
+
+var gColors = ['#000000', '#FFFFFF', '#4A90E2', '#D0021B', '#F5A623', '#F8E71C', '#00B050', '#9013FE'];
+var TextToolColorPicker = React.createClass({
+	render: function() {
+		var { toolentry, toolstates } = this.props;
+
+		// return React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip(toolentry.tooltip || toolentry.name) },
+		// 	React.createElement(ReactBootstrap.Dropdown, { id:toolentry.name.toLowerCase().replace(/[^a-z]/g, '') + '_dropdown' },
+		// 		React.createElement(ReactBootstrap.Button, { bsRole:'toggle' },
+		// 			React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
+		// 		),
+		// 		React.createElement(ReactBootstrap.Dropdown.Menu, { bsRole:'menu' },
+		// 			React.createElement('div', { eventKey:'1', style:{display:'inline-block', width:'16px', height:'16px', border:'1px solid #999', margin:'2px', backgroundColor:'steelblue'} }),
+		// 			React.createElement('div', { eventKey:'2', style:{display:'inline-block', width:'16px', height:'16px', border:'1px solid #999', margin:'2px', backgroundColor:'green'} })
+		// 		)
+		// 	)
+		// );
+		return React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip(toolentry.tooltip || toolentry.name) },
+			React.createElement(ReactBootstrap.Dropdown, { id:toolentry.name.toLowerCase().replace(/[^a-z]/g, '') + '_dropdown' },
+				React.createElement(ReactBootstrap.Dropdown.Toggle, undefined,
+					React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
+				),
+				React.createElement(ReactBootstrap.Dropdown.Menu, undefined,
+					gColors.map( (el, i) => React.createElement(TextToolColor, { toolentry, color:el, eventKey:''+i }))
+				)
+			)
+		);
+	}
+});
+
+var TextToolColor = React.createClass({
+	onClick: function() {
+		var { toolentry, color } = this.props;
+
+		// var { cmd } = toolentry;
+		// if (cmd) {
+		// 	var { val } = menuitem_entry;
+		// 	document.execCommand(cmd, false, val || null);
+		// }
+
+		store.dispatch(setToolValues({
+			[toolentry.state.name]: color
+		}));
+
+		switch (toolentry.state.name) {
+			case 'fontcolor':
+					document.execCommand('foreColor', false, color);
+				break;
+			case 'fontbackcolor':
+					document.execCommand('hiliteColor', false, color);
+				break;
+		}
+
+		document.getElementById('editable').focus();
+	},
+	render: function() {
+		var { color, eventKey } = this.props;
+
+		return React.createElement(ReactBootstrap.MenuItem, { eventKey, onClick:this.onClick, style:{backgroundColor:color} })
 	}
 });
 

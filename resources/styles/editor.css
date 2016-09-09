@@ -22,3 +22,35 @@ body {
 #editable {
 	margin: 5px auto 0 auto; /* offset padding of .panel-default */
 }
+
+#backgroundcolor_dropdown + ul li,
+#fontcolor_dropdown + ul li,
+#fontbackground_dropdown + ul li {
+	display: inline-block;
+	border: 1px solid #999999;
+	margin: 2px;
+	padding: 0;
+}
+
+#backgroundcolor_dropdown + ul a,
+#fontcolor_dropdown + ul a,
+#fontbackground_dropdown + ul a {
+	margin: 0;
+	padding: 0;
+	width: 16px;
+	height: 16px;
+	background-color: inherit !important;
+}
+
+#backgroundcolor_dropdown + ul a:hover,
+#fontcolor_dropdown + ul a:hover,
+#fontbackground_dropdown + ul a:hover {
+	outline: 3px solid #eeeeee;
+}
+
+#backgroundcolor_dropdown + ul li.active a,
+#fontcolor_dropdown + ul li.active a,
+#fontbackground_dropdown + ul li.active a {
+	/*outline: 3px solid #337AB7;*/
+	outline: 3px solid #aaaaaa;
+}
