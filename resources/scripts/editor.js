@@ -373,7 +373,7 @@ function init() {
 			{
 				state: {
 					name: 'canvassize',
-					value: {w:300,h:250}
+					value: {w:558,h:250}
 				},
 				group: 'CANVAS',
 				name: formatStringFromNameCore('resize', 'main'),
@@ -407,6 +407,7 @@ function init() {
 				icon: 'ok',
 				type: 'button',
 				func: function() {
+					// block-link3333
 					var editable = document.getElementById('editable');
 					editable.removeAttribute('contenteditable');
 					callInFramescript('drawWindow', {x:editable.offsetLeft,y:editable.offsetTop,width:editable.offsetWidth,height:editable.offsetHeight,attachimg:true}, function() {
@@ -537,6 +538,19 @@ var app;
 
 // REACT COMPONENTS - PRESENTATIONAL
 var App = React.createClass({
+	componentDidMount: function() {
+		document.getElementById('editable').focus();
+		window.addEventListener('keydown', function(e) {
+			if (e.ctrlKey && e.key == 'Enter') {
+				// copy of block-link3333
+				var editable = document.getElementById('editable');
+				editable.removeAttribute('contenteditable');
+				callInFramescript('drawWindow', {x:editable.offsetLeft,y:editable.offsetTop,width:editable.offsetWidth,height:editable.offsetHeight,attachimg:true}, function() {
+					editable.setAttribute('contenteditable', 'true');
+				});
+			}
+		}, false);
+	},
 	render: function() {
 
 		return React.createElement('div', { id:'app_wrap', className:'app-wrap' },
@@ -580,7 +594,7 @@ var Editable = React.createClass({
 		return React.createElement('span', { id:'svgthis' },
 			React.createElement('font', { size:fontsize_entry.state.value },
 				React.createElement('div', { id:'editable', contentEditable:true, style:editable_style },
-					'rawr'
+					''
 				)
 			)
 		);
