@@ -352,6 +352,10 @@ function init() {
 				func: ()=>store.dispatch(showModal('image'))
 			},
 			{
+				state: {
+					name: 'smiliedisp',
+					value: {filter:'', pg:''}
+				},
 				name: formatStringFromNameCore('insertemote', 'main'),
 				icon: 'smilie',
 				type: TextToolSmilies
@@ -717,9 +721,52 @@ var TextToolMenuItem = React.createClass({
 });
 
 var TextToolSmilies = React.createClass({
-	onFilter: function(e) {
-		var value = e.target.value;
-		alert(value);
+	componentDidMount: function() {
+		window.addEventListener('keydown', this.onKeyDown, false);
+	},
+	onKeyDown: function(e) {
+		if (!this.isOpen) return;
+		if (e.repeat) return;
+
+		e.preventDefault();
+		e.stopPropagation();
+
+		var { toolstates } = this.props;
+		var { smiliedisp:state } = toolstates;
+
+		var newstate = Object.assign({}, state);
+		if (!newstate.pg || isNaN(newstate.pg)) {
+			newstate.pg = 1;
+		}
+
+		switch (e.key) {
+			case 'ArrowUp':
+					if (newstate.pg * 77 < gEmote.length) newstate.pg++;
+				break;
+			case 'ArrowDown':
+					if (newstate.pg > 1) newstate.pg--;
+				break;
+			case 'Backspace':
+				if (newstate.filter && newstate.filter.length) {
+					newstate.filter = newstate.filter.substr(0, newstate.filter.length - 1);
+					newstate.pg = 1;
+				}
+		}
+		if (e.key.length == 1) {
+			if (!newstate.filter) {
+				newstate.filter = '';
+			}
+			newstate.filter += e.key + '';
+			newstate.pg = 1;
+		}
+		console.log('e.key:', e.key);
+
+		var ischanged = React.addons.shallowCompare({props:state}, newstate);
+		if (ischanged) {
+			store.dispatch(setToolValues({
+				smiliedisp: newstate
+			}));
+		}
 	},
 	onMouseDown: function(e) {
 		if (e.target.nodeName == 'UL') {
@@ -730,22 +777,46 @@ var TextToolSmilies = React.createClass({
 	doPrevent: function(e) {
 		e.preventDefault();
 	},
+	onToggle: function(isOpen) {
+		this.isOpen = isOpen;
+	},
+	isOpen: false,
 	render: function() {
 		var { toolentry, toolstates } = this.props;
-		if (gEmote.length > 77) {
-			gEmote = gEmote.slice(0, 77);
+		var { smiliedisp:state } = toolstates;
+
+		var emotes_filtered = gEmote.slice();
+
+		var filtertxt;
+		if (!state.filter) {
+			filtertxt = 'Type to search';
+		} else {
+			var filter_patt = new RegExp(escapeRegExp(state.filter), 'i');
+			filtertxt = '"' + state.filter + '"';
+			emotes_filtered = emotes_filtered.filter(el=>filter_patt.test(el.Name) || el.Keywords.filter(keyword=>filter_patt.test(keyword)).length);
 		}
+
+		var pgtxt;
+		var pg = state.pg || 1;
+		var pgmax = Math.ceil(emotes_filtered.length / 77);
+		pgtxt = pg + ' / ' + pgmax;
+		var emotes_disp = emotes_filtered.slice((pg-1)*77, pg*77);
+
 		return React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip(toolentry.tooltip || toolentry.name) },
-			React.createElement(ReactBootstrap.Dropdown, { id:toolentry.name.toLowerCase().replace(/[^a-z]/g, '') + '_dropdown' },
+			React.createElement(ReactBootstrap.Dropdown, { onToggle:this.onToggle, id:toolentry.name.toLowerCase().replace(/[^a-z]/g, '') + '_dropdown' },
 				React.createElement(ReactBootstrap.Dropdown.Toggle, undefined,
 					React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
 				),
 				React.createElement(ReactBootstrap.Dropdown.Menu, { onMouseDown:this.onMouseDown },
-					// React.createElement('div', { onMouseDown:this.doPrevent },
-					// 	'Start typing to filter'
-					// ),
-					// React.createElement(ReactBootstrap.FormControl, {ref:'filter', type:'text', onChange:this.onFilter, onMouseDown:this.doPrevent, style:{marginBottom:'5px'}}),
-					gEmote.map( (el, i) => React.createElement(TextToolSmilie, { toolentry, smilie:el, eventKey:''+(i) }))
+					React.createElement('div', { onMouseDown:this.doPrevent },
+						React.createElement('span', { style:{float:'right'} },
+							pgtxt
+						),
+						React.createElement('span', undefined,
+							filtertxt
+						)
+					),
+					emotes_disp.map( (el, i) => React.createElement(TextToolSmilie, { toolentry, smilie:el, eventKey:''+(i) }))
 				)
 			)
 		);
@@ -806,6 +877,7 @@ function convertCodeToTwemoji(aCode) {
 	name = name.replace(/U\+FE0F/g, '-');
 	name = name.replace(/U\+/g, '');
 	name = name.replace(/^0+/, ''); // strip leading 0's
+	name = name.replace(/ /g, '-');
 	return name;
 }
 
@@ -1135,4 +1207,12 @@ function formatStringFromNameCore(aLocalizableStr, aLoalizedKeyInCoreAddonL10n, 
     }
 
     return cLocalizedStr;
+}
+
+function escapeRegExp(text) {
+	if (!arguments.callee.sRE) {
+		var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+		arguments.callee.sRE = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
+	}
+	return text.replace(arguments.callee.sRE, '\\$1');
 }
