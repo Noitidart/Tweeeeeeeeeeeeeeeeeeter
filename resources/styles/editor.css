@@ -55,7 +55,6 @@ body {
 	outline: 3px solid #aaaaaa;
 }
 
-
 #insertsmilie_dropdown + ul li {
 	display: inline-block;
 	/*border: 1px solid #999999;*/
@@ -84,4 +83,8 @@ body {
 
 .tooltip {
 	pointer-events: none;
+}
+
+#insertsmilie_dropdown + ul {
+	padding: 8px 8px 0 8px;
 }

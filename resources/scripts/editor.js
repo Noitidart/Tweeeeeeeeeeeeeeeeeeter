@@ -673,6 +673,12 @@ var TextToolMenu = React.createClass({
 
 		document.getElementById('editable').focus();
 	},
+	onMouseDown: function(e) {
+		if (e.target.nodeName == 'UL') {
+			// this prevents focus from straying, if you put this on `ReactBootstrap.FormControl` then it will keep it from closing
+			e.preventDefault();
+		}
+	},
 	render: function() {
 		var { toolentry, toolstates } = this.props;
 
@@ -681,7 +687,7 @@ var TextToolMenu = React.createClass({
 				React.createElement(ReactBootstrap.Dropdown.Toggle, { onClick:this.onClick },
 					React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
 				),
-				React.createElement(ReactBootstrap.Dropdown.Menu, undefined,
+				React.createElement(ReactBootstrap.Dropdown.Menu, { onMouseDown:this.onMouseDown },
 					toolentry.menuitems.map( (el, i) => React.createElement(TextToolMenuItem, { toolentry, menuitem_entry:el, eventKey:''+i }))
 				)
 			)
@@ -711,6 +717,19 @@ var TextToolMenuItem = React.createClass({
 });
 
 var TextToolSmilies = React.createClass({
+	onFilter: function(e) {
+		var value = e.target.value;
+		alert(value);
+	},
+	onMouseDown: function(e) {
+		if (e.target.nodeName == 'UL') {
+			// this prevents focus from straying, if you put this on `ReactBootstrap.FormControl` then it will keep it from closing
+			e.preventDefault();
+		}
+	},
+	doPrevent: function(e) {
+		e.preventDefault();
+	},
 	render: function() {
 		var { toolentry, toolstates } = this.props;
 		if (gEmote.length > 77) {
@@ -721,8 +740,12 @@ var TextToolSmilies = React.createClass({
 				React.createElement(ReactBootstrap.Dropdown.Toggle, undefined,
 					React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
 				),
-				React.createElement(ReactBootstrap.Dropdown.Menu, undefined,
-					gEmote.map( (el, i) => React.createElement(TextToolSmilie, { toolentry, smilie:el, eventKey:''+i }))
+				React.createElement(ReactBootstrap.Dropdown.Menu, { onMouseDown:this.onMouseDown },
+					// React.createElement('div', { onMouseDown:this.doPrevent },
+					// 	'Start typing to filter'
+					// ),
+					// React.createElement(ReactBootstrap.FormControl, {ref:'filter', type:'text', onChange:this.onFilter, onMouseDown:this.doPrevent, style:{marginBottom:'5px'}}),
+					gEmote.map( (el, i) => React.createElement(TextToolSmilie, { toolentry, smilie:el, eventKey:''+(i) }))
 				)
 			)
 		);
@@ -733,21 +756,67 @@ var TextToolSmilie = React.createClass({
 	onClick: function() {
 		var { toolentry, smilie } = this.props;
 
-		document.execCommand('insertImage', false, smilie['Twtr.']);
+		document.execCommand('insertImage', false, core.addon.path.images + '3rd/twemoji-svg/' + convertCodeToTwemoji(smilie.Code) + '.svg');
 
+		setTimeout(function() {
+			var fontsize = document.queryCommandValue('fontsize');
+			var imgsize;
+			switch (parseInt(fontsize)) {
+				case 1:
+						imgsize = 11;
+					break;
+				case 2:
+						imgsize = 16;
+					break;
+				case 3:
+						imgsize = 24;
+					break;
+				case 4:
+						imgsize = 32;
+					break;
+				case 5:
+						imgsize = 48;
+					break;
+				case 6:
+						imgsize = 60;
+					break;
+				case 7:
+						imgsize = 72;
+					break;
+				default:
+					imgsize = 24;
+			}
+			var img = document.querySelector('img:not([width])');
+			img.setAttribute('width', imgsize);
+			img.setAttribute('height', imgsize);
+		}, 0);
 		document.getElementById('editable').focus();
 	},
 	render: function() {
 		var { smilie, eventKey } = this.props;
 
 		return React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip(smilie.Name) },
-			React.createElement(ReactBootstrap.MenuItem, { eventKey, onClick:this.onClick, style:{backgroundImage:'url(' + smilie['Twtr.'] + ')'} })
+			React.createElement(ReactBootstrap.MenuItem, { eventKey, onClick:this.onClick, style:{backgroundImage:'url("' + core.addon.path.images + '3rd/twemoji-svg/' + convertCodeToTwemoji(smilie.Code) + '.svg")'} })
 		);
 	}
 });
 
+function convertCodeToTwemoji(aCode) {
+	var name = aCode;
+	name = name.replace(/U\+FE0F/g, '-');
+	name = name.replace(/U\+/g, '');
+	name = name.replace(/^0+/, ''); // strip leading 0's
+	return name;
+}
+
 var gColors = ['#000000', '#FFFFFF', '#4A90E2', '#D0021B', '#F5A623', '#F8E71C', '#00B050', '#9013FE'];
 var TextToolColorPicker = React.createClass({
+	onMouseDown: function(e) {
+		if (e.target.nodeName == 'UL') {
+			// this prevents focus from straying, if you put this on `ReactBootstrap.FormControl` then it will keep it from closing
+			e.preventDefault();
+		}
+	},
 	render: function() {
 		var { toolentry, toolstates } = this.props;
 
@@ -767,7 +836,7 @@ var TextToolColorPicker = React.createClass({
 				React.createElement(ReactBootstrap.Dropdown.Toggle, undefined,
 					React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
 				),
-				React.createElement(ReactBootstrap.Dropdown.Menu, undefined,
+				React.createElement(ReactBootstrap.Dropdown.Menu, { onMouseDown:this.onMouseDown },
 					gColors.map( (el, i) => React.createElement(TextToolColor, { toolentry, color:el, eventKey:''+i }))
 				)
 			)
