@@ -739,9 +739,17 @@ var TextToolSmilies = React.createClass({
 			newstate.pg = 1;
 		}
 
+		// get `pgmax`
+		var emotes_filtered = gEmote.slice();
+		if (state.filter) {
+			var filter_patt = new RegExp(escapeRegExp(state.filter), 'i');
+			emotes_filtered = emotes_filtered.filter(el=>filter_patt.test(el.Name) || el.Keywords.filter(keyword=>filter_patt.test(keyword)).length);
+		}
+		var pgmax = Math.ceil(emotes_filtered.length / 77);
+
 		switch (e.key) {
 			case 'ArrowUp':
-					if (newstate.pg * 77 < gEmote.length) newstate.pg++;
+					if (newstate.pg + 1 <= pgmax) newstate.pg++;
 				break;
 			case 'ArrowDown':
 					if (newstate.pg > 1) newstate.pg--;
