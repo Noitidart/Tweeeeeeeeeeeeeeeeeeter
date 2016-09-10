@@ -24,10 +24,8 @@ tr.forEach((el, i) => {
 		let key = keys[i];
 		let val;
 		switch (key) {
-			case 'Twtr.':
-				val = el.querySelector('img').getAttribute('src');
-				break;
 			case 'Name':
+			case 'Code':
 				val = toTitleCase(el.textContent.trim());
 				if (val.includes('≊')) {
 					val = val.substr(0, val.indexOf('≊')).trim();

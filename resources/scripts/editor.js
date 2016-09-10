@@ -839,7 +839,7 @@ var TextToolSmilies = React.createClass({
 							filtertxt
 						)
 					),
-					emotes_disp.map( (el, i) => React.createElement(TextToolSmilie, { toolentry, smilie:el, eventKey:''+(i) }))
+					emotes_filtered.map( (el, i) => React.createElement(TextToolSmilie, { toolentry, smilie:el, eventKey:''+(i) }))
 				)
 			)
 		);
@@ -896,12 +896,53 @@ var TextToolSmilie = React.createClass({
 });
 
 function convertCodeToTwemoji(aCode) {
+	// aCode must be a string like "U+0023 U+FE0F U+20E3"
 	var name = aCode;
 	name = name.replace(/U\+FE0F/g, '-');
 	name = name.replace(/U\+/g, '');
 	name = name.replace(/^0+/, ''); // strip leading 0's
 	name = name.replace(/ /g, '-');
+	// name = name.replace(/-FE0F-/gi, ''); // i cant do this, it messes up the "man heart" stuff
+	var feofsplit = name.split('-fe0f-');
+	if (feofsplit.length === 2) {
+		if (!feofsplit[0].includes('-') && !feofsplit[1].includes('-')) {
+			name = name.replace('-fe0f-', '-');
+		}
+	}
 	return name;
+
+	// return grabTheRightIcon(JSON.parse('["' + aCode.replace(/ /g, '').replace(/U\+/g, '\\u') + '"]')[0]);
+}
+
+function toCodePoint(unicodeSurrogates, sep) {
+  var
+	r = [],
+	c = 0,
+	p = 0,
+	i = 0;
+  while (i < unicodeSurrogates.length) {
+	c = unicodeSurrogates.charCodeAt(i++);
+	if (p) {
+	  r.push((0x10000 + ((p - 0xD800) << 10) + (c - 0xDC00)).toString(16));
+	  p = 0;
+	} else if (0xD800 <= c && c <= 0xDBFF) {
+	  p = c;
+	} else {
+	  r.push(c.toString(16));
+	}
+  }
+  return r.join(sep || '-');
+}
+function grabTheRightIcon(icon, variant) {
+  // if variant is present as \uFE0F
+  return toCodePoint(
+	variant === '\uFE0F' ?
+	  // the icon should not contain it
+	  icon.slice(0, -1) :
+	  // fix non standard OSX behavior
+	  (icon.length === 3 && icon.charAt(1) === '\uFE0F' ?
+		icon.charAt(0) + icon.charAt(2) : icon)
+  );
 }
 
 var gColors = ['#000000', '#FFFFFF', '#4A90E2', '#D0021B', '#F5A623', '#F8E71C', '#00B050', '#9013FE'];
