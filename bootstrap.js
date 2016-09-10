@@ -228,6 +228,9 @@ function getAddonInfo(aAddonId=core.addon.id) {
 function destroyEditorInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
 	aBrowser.parentNode.removeChild(aBrowser);
 }
+function displayMe(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
+	aBrowser.style.display = '';
+}
 function attachImgInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
 	// aArg is aDataURL
 	var sendto = aBrowser.parentNode.querySelector('browser'); // the first browser element is the users content browser
@@ -246,6 +249,7 @@ function showEditorInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser)
 	browser.setAttribute('type', 'content');
 	browser.setAttribute('remote', 'true');
 	browser.setAttribute('src', 'about:tweeter?editor');
+	browser.setAttribute('style', 'display:none');
 	// browser.setAttribute('src', core.addon.path.pages + 'editor.html');
 	browser.setAttribute('class', 'tweeeeeeeeeeeeeeeeeeter');
 	aBrowser.parentNode.appendChild(browser);

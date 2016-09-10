@@ -6,7 +6,7 @@ body {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background-color: rgba(0,0,0,0.2);
+	background-color: #E5F2F7;
 	height: 100vh;
 }
 
@@ -53,4 +53,35 @@ body {
 #fontbackground_dropdown + ul li.active a {
 	/*outline: 3px solid #337AB7;*/
 	outline: 3px solid #aaaaaa;
+}
+
+
+#insertsmilie_dropdown + ul li {
+	display: inline-block;
+	/*border: 1px solid #999999;*/
+	margin: 2px;
+	padding: 0;
+	background-size: 16px 16px;
+}
+
+#insertsmilie_dropdown + ul a {
+	margin: 0;
+	padding: 0;
+	width: 16px;
+	height: 16px;
+	background-image: inherit;
+	background-size: 16px 16px;
+	/*background-color: inherit !important;*/
+}
+
+#insertsmilie_dropdown + ul a:hover {
+	outline: 3px solid #eeeeee;
+}
+
+#insertsmilie_dropdown + ul li.active a {
+	outline: 3px solid #aaaaaa;
+}
+
+.tooltip {
+	pointer-events: none;
 }

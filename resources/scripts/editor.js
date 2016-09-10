@@ -352,6 +352,11 @@ function init() {
 				func: ()=>store.dispatch(showModal('image'))
 			},
 			{
+				name: formatStringFromNameCore('insertemote', 'main'),
+				icon: 'smilie',
+				type: TextToolSmilies
+			},
+			{
 				state: {
 					name: 'canvascolor',
 					value: '#FFFFFF' //[255, 255, 255, 1] // rgba
@@ -516,6 +521,8 @@ function init() {
 			),
 			document.getElementById('root')
 		);
+
+		callInBootstrap('displayMe');
 	});
 }
 
@@ -700,6 +707,42 @@ var TextToolMenuItem = React.createClass({
 		return React.createElement(ReactBootstrap.MenuItem, { eventKey, onClick:this.onClick },
 			!menuitem_entry.rel ? menuitem_entry.label : React.createElement(menuitem_entry.rel, menuitem_entry.robj, menuitem_entry.label)
 		)
+	}
+});
+
+var TextToolSmilies = React.createClass({
+	render: function() {
+		var { toolentry, toolstates } = this.props;
+		if (gEmote.length > 77) {
+			gEmote = gEmote.slice(0, 77);
+		}
+		return React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip(toolentry.tooltip || toolentry.name) },
+			React.createElement(ReactBootstrap.Dropdown, { id:toolentry.name.toLowerCase().replace(/[^a-z]/g, '') + '_dropdown' },
+				React.createElement(ReactBootstrap.Dropdown.Toggle, undefined,
+					React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
+				),
+				React.createElement(ReactBootstrap.Dropdown.Menu, undefined,
+					gEmote.map( (el, i) => React.createElement(TextToolSmilie, { toolentry, smilie:el, eventKey:''+i }))
+				)
+			)
+		);
+	}
+});
+
+var TextToolSmilie = React.createClass({
+	onClick: function() {
+		var { toolentry, smilie } = this.props;
+
+		document.execCommand('insertImage', false, smilie['Twtr.']);
+
+		document.getElementById('editable').focus();
+	},
+	render: function() {
+		var { smilie, eventKey } = this.props;
+
+		return React.createElement(ReactBootstrap.OverlayTrigger, { placement:'top', overlay:Tooltip(smilie.Name) },
+			React.createElement(ReactBootstrap.MenuItem, { eventKey, onClick:this.onClick, style:{backgroundImage:'url(' + smilie['Twtr.'] + ')'} })
+		);
 	}
 });
 
