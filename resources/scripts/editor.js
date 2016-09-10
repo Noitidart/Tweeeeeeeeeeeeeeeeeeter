@@ -373,7 +373,7 @@ function init() {
 			{
 				state: {
 					name: 'canvassize',
-					value: {w:558,h:250}
+					value: {w:558,h:75}
 				},
 				group: 'CANVAS',
 				name: formatStringFromNameCore('resize', 'main'),
@@ -579,7 +579,7 @@ var Editable = React.createClass({
 		// var {  } = this.props; // dispatchers
 
 		var editable_style = {
-			height: toolstates.canvassize.h + 'px',
+			minHeight: toolstates.canvassize.h + 'px',
 			width: toolstates.canvassize.w + 'px',
 			backgroundColor: toolstates.canvascolor, // 'rgba(' + toolstates.canvascolor.join(',') + ')',
 			direction: !toolstates.direction ? 'ltr' : 'rtl',
@@ -1101,7 +1101,7 @@ var Modals = React.createClass({
 							),
 							React.createElement(ReactBootstrap.Form, { onSubmit:this.onSubmit, inline:true },
 								React.createElement(ReactBootstrap.ControlLabel, undefined,
-									formatStringFromNameCore('height', 'main')
+									formatStringFromNameCore('minheight', 'main')
 								),
 								React.createElement(ReactBootstrap.FormControl, { type:'text', ref:'height', defaultValue:canvassize.h })
 							)
