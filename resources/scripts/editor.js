@@ -527,6 +527,18 @@ function init() {
 			document.getElementById('root')
 		);
 
+		// ctrl + enter for accept and close
+		window.addEventListener('keydown', function(e) {
+			if (e.ctrlKey && e.key == 'Enter') {
+				// copy of block-link3333
+				var editable = document.getElementById('editable');
+				editable.removeAttribute('contenteditable');
+				callInFramescript('drawWindow', {x:editable.offsetLeft,y:editable.offsetTop,width:editable.offsetWidth,height:editable.offsetHeight,attachimg:true}, function() {
+					editable.setAttribute('contenteditable', 'true');
+				});
+			}
+		}, false);
+
 		callInBootstrap('displayMe');
 	});
 }
@@ -538,19 +550,6 @@ var app;
 
 // REACT COMPONENTS - PRESENTATIONAL
 var App = React.createClass({
-	componentDidMount: function() {
-		document.getElementById('editable').focus();
-		window.addEventListener('keydown', function(e) {
-			if (e.ctrlKey && e.key == 'Enter') {
-				// copy of block-link3333
-				var editable = document.getElementById('editable');
-				editable.removeAttribute('contenteditable');
-				callInFramescript('drawWindow', {x:editable.offsetLeft,y:editable.offsetTop,width:editable.offsetWidth,height:editable.offsetHeight,attachimg:true}, function() {
-					editable.setAttribute('contenteditable', 'true');
-				});
-			}
-		}, false);
-	},
 	render: function() {
 
 		return React.createElement('div', { id:'app_wrap', className:'app-wrap' },
@@ -572,6 +571,9 @@ var EditorWrap = React.createClass({
 });
 
 var Editable = React.createClass({
+	componentDidMount: function() {
+		document.getElementById('editable').focus();
+	},
 	render: function() {
 		var { toolstates } = this.props; // mapped state
 		// var {  } = this.props; // dispatchers

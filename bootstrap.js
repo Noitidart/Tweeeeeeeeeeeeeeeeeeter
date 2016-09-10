@@ -230,6 +230,7 @@ function destroyEditorInTab(aArg, aReportProgess, aComm, aMessageManager, aBrows
 }
 function displayMe(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
 	aBrowser.style.display = '';
+	aBrowser.focus();
 }
 function attachImgInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
 	// aArg is aDataURL
