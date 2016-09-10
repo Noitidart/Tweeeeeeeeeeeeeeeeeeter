@@ -35,7 +35,7 @@ var core = {
 			// storage: OS.Path.join(OS.Constants.Path.profileDir, 'jetpack', core.addon.id, 'simple-storage')
 			// filestore:
 		},
-		cache_key: Math.random()
+		cache_key: '1.1'
 	},
 	os: {
 		name: OS.Constants.Sys.Name,
@@ -77,9 +77,9 @@ function startup(aData, aReason) {
 
 		formatStringFromName('blah', 'main');
 		// formatStringFromName('blah', 'chrome://global/locale/dateFormat.properties');
-		console.log('_cache_formatStringFromName_packages:', _cache_formatStringFromName_packages);
+
 		core.addon.l10n = _cache_formatStringFromName_packages;
-		console.log('core.addon.l10n:', core.addon.l10n);
+
 
 		gFsComm = new Comm.server.framescript(core.addon.id);
 
@@ -132,7 +132,7 @@ function shutdown(aData, aReason) {
 		var tabs = window.gBrowser.tabs;
 		for (var tab of tabs) {
 			var mystuff = tab.linkedBrowser.parentNode.querySelectorAll('.tweeeeeeeeeeeeeeeeeeter');
-			// console.error('mystuffmystuff:', mystuff);
+
 			if (mystuff) {
 				for (domel of mystuff) {
 					domel.parentNode.removeChild(domel);
@@ -235,14 +235,14 @@ function displayMe(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
 function attachImgInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
 	// aArg is aDataURL
 	var sendto = aBrowser.parentNode.querySelector('browser'); // the first browser element is the users content browser
-	console.log('sendto:', sendto, sendto.messageManager, sendto.messageManager.sendAsyncMessage);
+
 	aBrowser.parentNode.removeChild(aBrowser);
 	callInContentinframescript('attachImg', aArg, undefined, sendto.messageManager);
 }
 
 function showEditorInTab(aArg, aReportProgess, aComm, aMessageManager, aBrowser) {
 	// aReportProgess is undefined as MainContentscript doesnt have a callback on this
-	console.log('aBrowser:', aBrowser.parentNode);
+
 	// aBrowser.contentWindow.alert('hi');
 
 	var doc = aBrowser.ownerDocument;
@@ -300,7 +300,7 @@ function formatStringFromName(aKey, aLocalizedPackageName, aReplacements) {
 
 		_cache_formatStringFromName_packages[packageName] = packageJson;
 
-		console.log('packageJson:', packageJson);
+
 	}
 
 	var cLocalizedStr = _cache_formatStringFromName_packages[packageName][aKey];
@@ -440,7 +440,7 @@ var gWriteFilestoreTimeout = Cc['@mozilla.org/timer;1'].createInstance(Ci.nsITim
 function writeFilestore(aArg, aComm) {
 	// writes gFilestore to file (or if it is undefined, it writes gFilestoreDefault)
 	if (!gFilestore.dirty) {
-		console.warn('filestore is not dirty, so no need to write it');
+
 		return;
 	}
 

@@ -6,7 +6,7 @@ var callInFramescript, callInMainworker, callInBootstrap;
 // ""Helvetica Neue",Helvetica,Arial,sans-serif"
 
 function preinit() {
-	console.log('in iprenit');
+
 	({ callInFramescript, callInMainworker, callInBootstrap } = CommHelper.contentinframescript);
 	gFsComm = new Comm.client.content(init);
 }
@@ -653,7 +653,7 @@ var Tools = React.createClass({
 			}
 		}
 
-		// console.log('tool_rels:', tool_rels);
+
 
 		return React.createElement(ReactBootstrap.ButtonToolbar, undefined,
 			tool_rels
@@ -755,7 +755,7 @@ var TextToolSmilies = React.createClass({
 		e.stopPropagation();
 	},
 	onWheel: function(e) {
-		console.log('in wheel, deltaY:', e.deltaY);
+
 		if (e.deltaY < 0) {
 			e.key = 'ArrowDown';
 		} else {
@@ -807,7 +807,7 @@ var TextToolSmilies = React.createClass({
 			newstate.filter += e.key + '';
 			newstate.pg = 1;
 		}
-		console.log('e.key:', e.key);
+
 
 		var ischanged = React.addons.shallowCompare({props:state}, newstate);
 		if (ischanged) {
@@ -1054,7 +1054,7 @@ var Modals = React.createClass({
 	},
 	onEntering: function() {
 		// focus the first input field. my assumption is i as devuser only put refs on input fields. and i also assume that ref will itearate in order with for..in
-		// console.log('onEntring', this.refs);
+
 		for (var refkey in this.refs) {
 			var ref = this.refs[refkey];
 			ReactDOM.findDOMNode(ref).select();
@@ -1295,10 +1295,10 @@ function formatStringFromNameCore(aLocalizableStr, aLoalizedKeyInCoreAddonL10n, 
 	// 051916 update - made it core.addon.l10n based
     // formatStringFromNameCore is formating only version of the worker version of formatStringFromName, it is based on core.addon.l10n cache
 
-	try { var cLocalizedStr = core.addon.l10n[aLoalizedKeyInCoreAddonL10n][aLocalizableStr]; if (!cLocalizedStr) { throw new Error('localized is undefined'); } } catch (ex) { console.error('formatStringFromNameCore error:', ex, 'args:', aLocalizableStr, aLoalizedKeyInCoreAddonL10n, aReplacements); } // remove on production
+
 
 	var cLocalizedStr = core.addon.l10n[aLoalizedKeyInCoreAddonL10n][aLocalizableStr];
-	// console.log('cLocalizedStr:', cLocalizedStr, 'args:', aLocalizableStr, aLoalizedKeyInCoreAddonL10n, aReplacements);
+
     if (aReplacements) {
         for (var i=0; i<aReplacements.length; i++) {
             cLocalizedStr = cLocalizedStr.replace('%S', aReplacements[i]);
