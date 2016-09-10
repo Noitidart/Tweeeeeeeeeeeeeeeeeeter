@@ -839,7 +839,7 @@ var TextToolSmilies = React.createClass({
 							filtertxt
 						)
 					),
-					emotes_filtered.map( (el, i) => React.createElement(TextToolSmilie, { toolentry, smilie:el, eventKey:''+(i) }))
+					emotes_disp.map( (el, i) => React.createElement(TextToolSmilie, { toolentry, smilie:el, eventKey:''+(i) }))
 				)
 			)
 		);
