@@ -194,7 +194,7 @@ function init() {
 				group: 'LISTS',
 				name: formatStringFromNameCore('listnumber', 'main'),
 				type: 'button',
-				icon: 'list-alt',
+				icon: 'list-number',
 				cmd: 'insertOrderedList'
 			},
 			{
@@ -357,7 +357,7 @@ function init() {
 					value: {filter:'', pg:''}
 				},
 				name: formatStringFromNameCore('insertemote', 'main'),
-				icon: 'smilie',
+				icon: 'smiley',
 				type: TextToolSmilies
 			},
 			{
@@ -754,6 +754,15 @@ var TextToolSmilies = React.createClass({
 		e.preventDefault();
 		e.stopPropagation();
 	},
+	onWheel: function(e) {
+		console.log('in wheel, deltaY:', e.deltaY);
+		if (e.deltaY < 0) {
+			e.key = 'ArrowDown';
+		} else {
+			e.key = 'ArrowUp';
+		}
+		this.onKeyDown(e);
+	},
 	onKeyDown: function(e) {
 		if (!this.isOpen) return;
 
@@ -846,7 +855,7 @@ var TextToolSmilies = React.createClass({
 				React.createElement(ReactBootstrap.Dropdown.Toggle, undefined,
 					React.createElement(ReactBootstrap.Glyphicon, { glyph:toolentry.icon })
 				),
-				React.createElement(ReactBootstrap.Dropdown.Menu, { onMouseDown:this.onMouseDown },
+				React.createElement(ReactBootstrap.Dropdown.Menu, { onWheel: this.onWheel, onMouseDown:this.onMouseDown },
 					React.createElement('div', { onMouseDown:this.doPrevent },
 						React.createElement('span', { style:{float:'right'} },
 							pgtxt
@@ -866,40 +875,36 @@ var TextToolSmilie = React.createClass({
 	onClick: function() {
 		var { toolentry, smilie } = this.props;
 
-		document.execCommand('insertImage', false, core.addon.path.images + '3rd/twemoji-svg/' + convertCodeToTwemoji(smilie.Code) + '.svg');
-
-		setTimeout(function() {
-			var fontsize = document.queryCommandValue('fontsize');
-			var imgsize;
-			switch (parseInt(fontsize)) {
-				case 1:
-						imgsize = 11;
-					break;
-				case 2:
-						imgsize = 16;
-					break;
-				case 3:
-						imgsize = 24;
-					break;
-				case 4:
-						imgsize = 32;
-					break;
-				case 5:
-						imgsize = 48;
-					break;
-				case 6:
-						imgsize = 60;
-					break;
-				case 7:
-						imgsize = 72;
-					break;
-				default:
+		var fontsize = document.queryCommandValue('fontsize');
+		var imgsize;
+		switch (parseInt(fontsize)) {
+			case 1:
+					imgsize = 11;
+				break;
+			case 2:
+					imgsize = 16;
+				break;
+			case 3:
 					imgsize = 24;
-			}
-			var img = document.querySelector('img:not([width])');
-			img.setAttribute('width', imgsize);
-			img.setAttribute('height', imgsize);
-		}, 0);
+				break;
+			case 4:
+					imgsize = 32;
+				break;
+			case 5:
+					imgsize = 48;
+				break;
+			case 6:
+					imgsize = 60;
+				break;
+			case 7:
+					imgsize = 72;
+				break;
+			default:
+				imgsize = 24;
+		}
+
+		document.execCommand('insertHTML', false, '<img src="' + core.addon.path.images + '3rd/twemoji-svg/' + convertCodeToTwemoji(smilie.Code) + '.svg' + '" width="' + imgsize + '" height="' + imgsize + '" />');
+
 		document.getElementById('editable').focus();
 	},
 	render: function() {
