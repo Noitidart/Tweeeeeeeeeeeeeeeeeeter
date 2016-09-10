@@ -722,14 +722,29 @@ var TextToolMenuItem = React.createClass({
 
 var TextToolSmilies = React.createClass({
 	componentDidMount: function() {
-		window.addEventListener('keydown', this.onKeyDown, false);
+		window.addEventListener('keydown', this.onKeyDown, true);
+		window.addEventListener('keyup', this.onKeyUp, true);
+		window.addEventListener('keypress', this.onKeyPress, true);
 	},
-	onKeyDown: function(e) {
+	onKeyUp: function(e) {
 		if (!this.isOpen) return;
-		if (e.repeat) return;
 
 		e.preventDefault();
 		e.stopPropagation();
+	},
+	onKeyPress: function(e) {
+		if (!this.isOpen) return;
+
+		e.preventDefault();
+		e.stopPropagation();
+	},
+	onKeyDown: function(e) {
+		if (!this.isOpen) return;
+
+		e.preventDefault();
+		e.stopPropagation();
+
+		if (e.repeat) return;
 
 		var { toolstates } = this.props;
 		var { smiliedisp:state } = toolstates;
