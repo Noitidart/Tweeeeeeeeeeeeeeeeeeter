@@ -1026,6 +1026,20 @@ var Modals = React.createClass({
 				break;
 		}
 	},
+	onSubmit: function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		this.doApply();
+	},
+	onEntering: function() {
+		// focus the first input field. my assumption is i as devuser only put refs on input fields. and i also assume that ref will itearate in order with for..in
+		// console.log('onEntring', this.refs);
+		for (var refkey in this.refs) {
+			var ref = this.refs[refkey];
+			ReactDOM.findDOMNode(ref).select();
+			break;
+		}
+	},
 	render: function() {
 		var { modal } = this.props; // mapped state
 		var { doClose } = this.props; // dispatchers
@@ -1063,13 +1077,13 @@ var Modals = React.createClass({
 							)
 						),
 						React.createElement(ReactBootstrap.Modal.Body, undefined,
-							React.createElement(ReactBootstrap.Form, { inline:true },
+							React.createElement(ReactBootstrap.Form, { onSubmit:this.onSubmit, inline:true },
 								React.createElement(ReactBootstrap.ControlLabel, undefined,
 									formatStringFromNameCore('width', 'main')
 								),
 								React.createElement(ReactBootstrap.FormControl, { type:'text', ref:'width', defaultValue:canvassize.w })
 							),
-							React.createElement(ReactBootstrap.Form, { inline:true },
+							React.createElement(ReactBootstrap.Form, { onSubmit:this.onSubmit, inline:true },
 								React.createElement(ReactBootstrap.ControlLabel, undefined,
 									formatStringFromNameCore('height', 'main')
 								),
@@ -1103,7 +1117,7 @@ var Modals = React.createClass({
 					)
 				];
 		}
-		return React.createElement(ReactBootstrap.Modal, { show:!!modal, onHide:doClose },
+		return React.createElement(ReactBootstrap.Modal, { onEntering:this.onEntering, show:!!modal, onHide:doClose },
 			contents
 		)
 	}
